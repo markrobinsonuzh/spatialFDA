@@ -123,7 +123,7 @@ All of these function have different implementations to correct for inhomogeneit
 
 With correlation metrics we assess the distances of all points to one another while normalising for effects of different density and of the window size $|W|$. Furthermore, spatial metrics are corrected for edge effects, the fact that points at the boarder of a fov have not a fully observed neighborhood [@baddeleySpatialPointPatterns, pp. 203 ff.].  
 
-A known metric is Ripley's $K$ function or its variance-stabilised transformation, the $L$ function. We can calculate a variant of the $L$ function with the function `calcMetricPerFov` between e.g $\alpha$ and $\beta$ cells. The output is a dataframe with the following most important columns:
+A known metric is Ripley's $K$ function or its variance-stabilised transformation, the $L$ function. We can calculate a variant of the $L$ function with the function `calcMetricPerFov` between e.g $\alpha$ and cytotoxic T cells. The output is a dataframe with the following most important columns:
 
 - `r`: the radius at which the spatial metric is evaluated
 
@@ -133,7 +133,7 @@ A known metric is Ripley's $K$ function or its variance-stabilised transformatio
 
 
 ```{r Lfunction}
-metric_res <- calcMetricPerFov(spe, c("alpha", "beta"),
+metric_res <- calcMetricPerFov(spe, c("alpha", "Tc"),
     subsetby = "image_number", fun = "Lcross", marks = "cell_type",
     r_seq = seq(0, 50, length.out = 50), by = c("patient_stage", "patient_id", "image_number"),
     ncores = 1
@@ -164,7 +164,7 @@ Another important aspect of spatial analysis is spacing. Here, the shortest dist
 For spacing metrics we get different border corrections but the calculation stays the same:
 
 ```{r Gfunction}
-metric_res <- calcMetricPerFov(spe, c("alpha", "beta"),
+metric_res <- calcMetricPerFov(spe, c("alpha", "Tc"),
     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
     r_seq = seq(0, 50, length.out = 50), by = c("patient_stage", "patient_id", "image_number"),
     ncores = 1
@@ -217,7 +217,8 @@ mdl <- functionalGam(
     dat = dat, x = metric_res$r |> unique(),
     designmat = designmat, weights = dat$weights$npoints,
     formula = formula(Y ~ conditionLong_duration +
-        conditionOnset + s(patient_id, bs = "re"))
+        conditionOnset + s(patient_id, bs = "re")),
+    family = 'gaulss'
 )
 summary(mdl)
 
@@ -225,7 +226,13 @@ plot_ls <- lapply(colnames(designmat), plotMdl, mdl = mdl, shift = mdl$coefficie
 wrap_plots(plot_ls, nrow = 3)
 ```
 
-We note that there is no difference in the $G$ function between non-diabetic and early onset T1D samples but a strong difference between non-diabetic and long duration T1D. This difference is most pronounced at $\sim 25 µm$ and deteriorates at longer distances. Therefore, we don't only see that a spatial difference colocalisation of $\alpha$ and $\beta$ cells is statistically significant but also at which spatial scale this difference occurs.
+We note that there is no difference in the $G$ function between non-diabetic and long duration T1D samples but a strong difference between non-diabetic and onset T1D. This difference is significant after $\sim 30 µm$ and increases at longer distances. Therefore, we don't only see that a spatial difference colocalisation of $\alpha$ and cytotoxic T cells is statistically significant but also at which spatial scale this difference occurs.
+
+One open problem at the moment is the implementation of confidence bands that reflect the non-independently and non-identically distributed residuals. To visualise how much of a problem this is, we can plot the contours of the correlation/covariance. We can model the confidence using a gaussian location-scale model if the errors are heteroskedastic [@wood2016Smoothing]. 
+
+```{r contour}
+resid(mdl) |> cov() |> filled.contour()
+```
 
 # Functional principal component analysis
 
@@ -238,7 +245,7 @@ pca <- functionalPCA(dat = dat, r = metric_res$r |> unique(), knots = 30, pve = 
 plotFpca(dat = dat, res = pca, colourby = "condition")
 ```
 
-In the biplot above we get a very basic differentiation of the $G$ curves. Long-duration T1D separates from non-diabetic and onset T1D along the first fPC. The second fPC describes less variation. The onset T1D samples are less clustered and more spread out along the first two fPCs than the non-diabetic samples.
+In the biplot above we get a very basic differentiation of the $G$ curves. Onset T1D shows most variability along the first fPC. The second fPC describes less variation. 
 
 ```{r sessionInfo}
 sessionInfo()
