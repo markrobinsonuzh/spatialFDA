@@ -7,7 +7,7 @@
 plotMdl(mdl, predictor, shift = NULL)
 }
 \arguments{
-\item{mdl}{a pffr model object}
+\item{mdl}{a \code{pffr} model object}
 
 \item{predictor}{predictor to plot}
 
@@ -18,7 +18,11 @@ this will most often be the constant intercept}
 ggplot object of the functional estimate
 }
 \description{
-Plot a pffr model object
+A function that takes a pffr object as calculated in \code{functionalGam} and
+plots the functional coefficients. The functions are centered such that their
+expected value is zero. Therefore, the scalar intercept has to be added to
+the output with the argument \code{shift} in order to plot the coefficients in
+their original range.
 }
 \examples{
 library("tidyr")

@@ -20,7 +20,8 @@ the functional}
 a list with components of fpca.face
 }
 \description{
-Plot a biplot from an fPCA analysis
+A function that takes the output from the \code{functionalPCA} function and returns
+a \code{ggplot} object of the first two dimensions of the PCA as biplot.
 }
 \examples{
 # load the pancreas dataset

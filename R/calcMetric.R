@@ -1,18 +1,22 @@
-#' Compute a spatial metric on a spatial experiment object
+#' Compute a spatial metric on a SpatialExperiment object
 #'
-#' @param df A dataframe with the x and y coordinates from the corresponding
-#' SpatialExperiment and the ColData
+#' A function that takes a `SpatialExperiment` object and computes a spatial
+#' statistics function as implemented in `spatstat`. The output is a `spatstat`
+#' object.
+#'
+#' @param df A `dataframe` with the x and y coordinates from the corresponding
+#' `SpatialExperiment` and the `colData`
 #' @param selection the mark(s) you want to compare
-#' @param fun the spatstat function to compute on the point pattern object
+#' @param fun the `spatstat` function to compute on the point pattern object
 #' @param marks the marks to consider e.g. cell types
 #' @param r_seq the range of r values to compute the function over
-#' @param by the spe colData variable(s) to add to the meta data
+#' @param by the spe `colData` variable(s) to add to the meta data
 #' @param continuous A boolean indicating whether the marks are continuous
 #' defaults to FALSE
 #' @param window a observation window for the point pattern of class `owin`.
-#' @param ... Other parameters passed to spatstat.explore functions
+#' @param ... Other parameters passed to `spatstat.explore` functions
 #'
-#' @return a spatstat metric object with the fov number, the number of
+#' @return a `spatstat` metric object with the fov number, the number of
 #' points and the centroid of the image
 #' @export
 #'
@@ -116,8 +120,6 @@ extractMetric <- function(df,
             row.names = seq(1:length(r_seq))
         )
     }
-    # is this needed?
-    # metric_res$image_id <- df$image_number %>% unique()
     metric_res <- cbind(metric_res, meta_data)
     metric_res$npoints <- spatstat.geom::npoints(pp_sub)
     centroid <- spatstat.geom::centroid.owin(pp_sub$window)
@@ -126,21 +128,24 @@ extractMetric <- function(df,
     return(metric_res)
 }
 
-#' Calculate a spatial metric on a spatial experiment object per field of view
+#' Calculate a spatial metric on a `SpatialExperiment` object per field of view
 #'
-#' @param spe a spatial experiment object
+#' A function that takes a `SpatialExperiment` object as input and calculates a
+#' spatial metric as implemented by `spatstat` per field of view.
+#'
+#' @param spe a `SpatialExperiment` object
 #' @param selection the mark(s) you want to compare
-#' @param subsetby the spe colData variable to subset the data by
-#' @param fun the spatstat function to compute on the point pattern object
+#' @param subsetby the spe `colData` variable to subset the data by
+#' @param fun the `spatstat` function to compute on the point pattern object
 #' @param marks the marks to consider e.g. cell types
 #' @param r_seq the range of r values to compute the function over
-#' @param by the spe colData variable(s) to add to the meta data
+#' @param by the spe `colData` variable(s) to add to the meta data
 #' @param continuous A boolean indicating whether the marks are continuous
 #' defaults to FALSE
 #' @param ncores the number of cores to use for parallel processing, default = 1
-#' @param ... Other parameters passed to spatstat.explore functions
+#' @param ... Other parameters passed to `spatstat.explore` functions
 #'
-#' @return a dataframe of the spatstat metric objects with the radius r, the
+#' @return a `dataframe` of the `spatstat` metric objects with the radius r, the
 #' theoretical value of a Poisson process, the different border corrections
 #' the fov number, the number of points and the centroid of the image
 #' @export
@@ -187,21 +192,25 @@ calcMetricPerFov <- function(spe, selection, subsetby = NULL, fun, marks = NULL,
 }
 
 
-#' Calculate cross spatial metrics for all combinations on a SPE object per fov
+#' Calculate cross spatial metrics for all combinations per FOV
 #'
-#' @param spe a spatial experiment object
+#' A function that takes a `SpatialExperiment` object as input and calculates a
+#' cross spatial metric as implemented by `spatstat` per field of view for all
+#' combinations provided by the user.
+#'
+#' @param spe a `SpatialExperiment` object
 #' @param selection the mark(s) you want to compare
-#' @param subsetby the spe colData variable to subset the data by
-#' @param fun the spatstat function to compute on the point pattern object
+#' @param subsetby the spe `colData` variable to subset the data by
+#' @param fun the `spatstat` function to compute on the point pattern object
 #' @param marks the marks to consider e.g. cell types
 #' @param r_seq the range of r values to compute the function over
-#' @param by the spe colData variable(s) to add to the meta data
+#' @param by the spe `colData` variable(s) to add to the meta data
 #' @param ncores the number of cores to use for parallel processing, default = 1
 #' @param continuous A boolean indicating whether the marks are continuous
 #' defaults to FALSE
 #' @param ... Other parameters passed to spatstat.explore functions
 #'
-#' @return a dataframe of the spatstat metric objects with the radius r, the
+#' @return a dataframe of the `spatstat` metric objects with the radius r, the
 #' theoretical value of a Poisson process, the different border corrections
 #' the fov number, the number of points and the centroid of the image
 #' @export

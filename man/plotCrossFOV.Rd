@@ -7,7 +7,7 @@
 plotCrossFOV(sub_fov, theo, correction, x, image_id, ID = NULL)
 }
 \arguments{
-\item{sub_fov}{a subset of the dataframe to the respective fov}
+\item{sub_fov}{a subset of the \code{dataframe} to the respective fov}
 
 \item{theo}{logical; if the theoretical line should be plotted}
 

@@ -4,7 +4,7 @@
 \alias{functionalGam}
 \title{General additive model with functional response}
 \usage{
-functionalGam(data, x, designmat, weights, formula)
+functionalGam(data, x, designmat, weights, formula, ...)
 }
 \arguments{
 \item{data}{a dataframe with the following columns: Y = functional response;
@@ -24,7 +24,10 @@ have to correspond to the variables in the formula.}
 a fitted pffr object which inherits from gam
 }
 \description{
-General additive model with functional response
+A function that takes the output of a metric calculation as done by
+\code{calcMetricPerFov}. The data has to be prepared into the correct format for the
+functional analysis by the \code{prepData} function. The output is a \code{pffr} object
+as implemented by \code{refund}.
 }
 \examples{
 # load the pancreas dataset

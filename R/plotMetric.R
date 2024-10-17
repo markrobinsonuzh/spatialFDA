@@ -1,13 +1,16 @@
 #' Plot a spatial metric per field of view
 #'
-#' @param metric_df the metric dataframe as calculated by calcMetricPerFov
+#' A function that plots the output of the function `calcMetricPerFov`. The plot
+#' contains one curve per FOV and makes subplots by samples.
+#'
+#' @param metric_df the metric `dataframe` as calculated by `calcMetricPerFov`
 #' @param theo logical; if the theoretical line should be plotted
 #' @param correction the border correction to plot
 #' @param x the x-axis variable to plot
 #' @param image_id the ID of the image/fov
 #' @param ID the (optional) ID for plotting combinations
 #'
-#' @return a ggplot object
+#' @return a `ggplot` object
 #' @export
 #'
 #' @examples
@@ -57,7 +60,7 @@ plotMetricPerFov <- function(metric_df, theo = FALSE, correction = NULL,
 
 #' Creates a nXn plot of the cross metrics per sample
 #'
-#' @param sub_fov a subset of the dataframe to the respective fov
+#' @param sub_fov a subset of the `dataframe` to the respective fov
 #' @param theo logical; if the theoretical line should be plotted
 #' @param correction the border correction to plot
 #' @param x the x-axis variable to plot

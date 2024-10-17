@@ -1,5 +1,9 @@
 #' Functional Principal Component Analysis
 #'
+#' A function that takes as input the output of `calcMetricPerFov` which has to
+#' be converted into the correct format by `prepData`. The output is a list with
+#' the `fpca.face` output from refund.
+#'
 #' @param dat a data object for functional data analysis containing at least the
 #' the functional
 #' @param r the functional domain
@@ -51,6 +55,9 @@ functionalPCA <- function(dat, r, knots, pve = 0.95) {
 }
 
 #' Plot a biplot from an fPCA analysis
+#'
+#' A function that takes the output from the `functionalPCA` function and returns
+#' a `ggplot` object of the first two dimensions of the PCA as biplot.
 #'
 #' @param dat a data object for functional data analysis containing at least the
 #' the functional

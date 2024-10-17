@@ -1,6 +1,12 @@
 #' Plot a pffr model object
 #'
-#' @param mdl a pffr model object
+#' A function that takes a pffr object as calculated in `functionalGam` and
+#' plots the functional coefficients. The functions are centered such that their
+#' expected value is zero. Therefore, the scalar intercept has to be added to
+#' the output with the argument `shift` in order to plot the coefficients in
+#' their original range.
+#'
+#' @param mdl a `pffr` model object
 #' @param predictor predictor to plot
 #' @param shift the value by which to shift the centered functional intercept.
 #' this will most often be the constant intercept

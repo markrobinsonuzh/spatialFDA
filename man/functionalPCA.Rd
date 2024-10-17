@@ -20,7 +20,9 @@ the functional}
 a list with components of fpca.face
 }
 \description{
-Functional Principal Component Analysis
+A function that takes as input the output of \code{calcMetricPerFov} which has to
+be converted into the correct format by \code{prepData}. The output is a list with
+the \code{fpca.face} output from refund.
 }
 \examples{
 # load the pancreas dataset

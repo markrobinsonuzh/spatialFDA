@@ -2,7 +2,7 @@
 % Please edit documentation in R/calcMetric.R
 \name{extractMetric}
 \alias{extractMetric}
-\title{Compute a spatial metric on a spatial experiment object}
+\title{Compute a spatial metric on a SpatialExperiment object}
 \usage{
 extractMetric(
   df,
@@ -17,32 +17,34 @@ extractMetric(
 )
 }
 \arguments{
-\item{df}{A dataframe with the x and y coordinates from the corresponding
-SpatialExperiment and the ColData}
+\item{df}{A \code{dataframe} with the x and y coordinates from the corresponding
+\code{SpatialExperiment} and the \code{colData}}
 
 \item{selection}{the mark(s) you want to compare}
 
-\item{fun}{the spatstat function to compute on the point pattern object}
+\item{fun}{the \code{spatstat} function to compute on the point pattern object}
 
 \item{marks}{the marks to consider e.g. cell types}
 
 \item{r_seq}{the range of r values to compute the function over}
 
-\item{by}{the spe colData variable(s) to add to the meta data}
+\item{by}{the spe \code{colData} variable(s) to add to the meta data}
 
 \item{continuous}{A boolean indicating whether the marks are continuous
 defaults to FALSE}
 
 \item{window}{a observation window for the point pattern of class \code{owin}.}
 
-\item{...}{Other parameters passed to spatstat.explore functions}
+\item{...}{Other parameters passed to \code{spatstat.explore} functions}
 }
 \value{
-a spatstat metric object with the fov number, the number of
+a \code{spatstat} metric object with the fov number, the number of
 points and the centroid of the image
 }
 \description{
-Compute a spatial metric on a spatial experiment object
+A function that takes a \code{SpatialExperiment} object and computes a spatial
+statistics function as implemented in \code{spatstat}. The output is a \code{spatstat}
+object.
 }
 \examples{
 spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)

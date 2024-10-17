@@ -14,7 +14,7 @@ plotMetricPerFov(
 )
 }
 \arguments{
-\item{metric_df}{the metric dataframe as calculated by calcMetricPerFov}
+\item{metric_df}{the metric \code{dataframe} as calculated by \code{calcMetricPerFov}}
 
 \item{theo}{logical; if the theoretical line should be plotted}
 
@@ -27,10 +27,11 @@ plotMetricPerFov(
 \item{ID}{the (optional) ID for plotting combinations}
 }
 \value{
-a ggplot object
+a \code{ggplot} object
 }
 \description{
-Plot a spatial metric per field of view
+A function that plots the output of the function \code{calcMetricPerFov}. The plot
+contains one curve per FOV and makes subplots by samples.
 }
 \examples{
 spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)

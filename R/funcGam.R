@@ -1,5 +1,10 @@
 #' General additive model with functional response
 #'
+#' A function that takes the output of a metric calculation as done by
+#' `calcMetricPerFov`. The data has to be prepared into the correct format for the
+#' functional analysis by the `prepData` function. The output is a `pffr` object
+#' as implemented by `refund`.
+#'
 #' @param data a dataframe with the following columns: Y = functional response;
 #' sample_id = sample ID; image_id = image ID;
 #' @param x the x-axis values of the functional response
@@ -60,7 +65,7 @@
 
 #' @import dplyr
 
-functionalGam <- function(data, x, designmat, weights, formula) {
+functionalGam <- function(data, x, designmat, weights, formula, ...) {
     # get the colnames
     colnam <- colnames(designmat)
     for (i in 1:length(colnam)) {
@@ -73,7 +78,8 @@ functionalGam <- function(data, x, designmat, weights, formula) {
     mdl <- refund::pffr(formula,
         yind = x,
         data = data,
-        weights = weights
+        weights = weights,
+        ...
     )
     return(mdl)
 }
