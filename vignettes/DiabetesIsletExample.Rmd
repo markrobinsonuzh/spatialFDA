@@ -88,10 +88,10 @@ df <- as.data.frame(spatialCoords(spe))
 
 df <- cbind(df, colData(spe))
 
-df_sub <- df %>%
+dfSub <- df %>%
     subset(cell_type %in% c("alpha", "beta", "delta", "Th", "Tc")) %>%
     subset(image_name %in% c("E02", "E03", "E04", "E05"))
-p <- ggplot(df_sub, aes(x = cell_x, y = cell_y, color = cell_type)) +
+p <- ggplot(dfSub, aes(x = cell_x, y = cell_y, color = cell_type)) +
     geom_point() +
     facet_wrap(~image_name) +
     theme_light() +
@@ -133,19 +133,19 @@ A known metric is Ripley's $K$ function or its variance-stabilised transformatio
 
 
 ```{r Lfunction}
-metric_res <- calcMetricPerFov(spe, c("alpha", "Tc"),
+metricRes <- calcMetricPerFov(spe, c("alpha", "Tc"),
     subsetby = "image_number", fun = "Lcross", marks = "cell_type",
-    r_seq = seq(0, 50, length.out = 50), by = c("patient_stage", "patient_id", "image_number"),
+    rSeq = seq(0, 50, length.out = 50), by = c("patient_stage", "patient_id", "image_number"),
     ncores = 1
 )
 
-metric_res %>% head()
+metricRes %>% head()
 ```
 
 We can visualise this metric with `plotMetricPerFov` function. Here, we need to specify which border correction we want to plot and what the x-axis is. Both can vary from function to function.
 
 ```{r plotLfunction}
-p <- plotMetricPerFov(metric_res, correction = "border", x = "r", image_id = "image_number", ID = "ID")
+p <- plotMetricPerFov(metricRes, correction = "border", x = "r", imageId = "image_number", ID = "ID")
 print(p)
 ```
 
@@ -164,17 +164,17 @@ Another important aspect of spatial analysis is spacing. Here, the shortest dist
 For spacing metrics we get different border corrections but the calculation stays the same:
 
 ```{r Gfunction}
-metric_res <- calcMetricPerFov(spe, c("alpha", "Tc"),
+metricRes <- calcMetricPerFov(spe, c("alpha", "Tc"),
     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-    r_seq = seq(0, 50, length.out = 50), by = c("patient_stage", "patient_id", "image_number"),
+    rSeq = seq(0, 50, length.out = 50), by = c("patient_stage", "patient_id", "image_number"),
     ncores = 1
 )
 
-metric_res %>% head()
+metricRes %>% head()
 ```
 
 ```{r plotGfunction}
-p <- plotMetricPerFov(metric_res, correction = "rs", x = "r", image_id = "image_number", ID = "ID")
+p <- plotMetricPerFov(metricRes, correction = "rs", x = "r", imageId = "image_number", ID = "ID")
 print(p)
 ```
 
@@ -188,22 +188,22 @@ In this context we need to specify a design matrix and contrasts.
 
 ```{r funcGamG, fig.height=10}
 # create a unique ID for each row
-metric_res$ID <- paste0(
-    metric_res$patient_stage, "x", metric_res$patient_id,
-    "x", metric_res$image_number
+metricRes$ID <- paste0(
+    metricRes$patient_stage, "x", metricRes$patient_id,
+    "x", metricRes$image_number
 )
 
 # prepare dataframe from calcMetricRes to be in the correct format for pffr
-dat <- prepData(metric_res, "r", "rs")
+dat <- prepData(metricRes, "r", "rs")
 
 # drop rows with NA
 dat <- dat |> drop_na()
 
 # create meta info of the IDs
-split_data <- str_split(dat$ID, "x")
-dat$condition <- factor(sapply(split_data, function(x) x[1]))
-dat$patient_id <- factor(sapply(split_data, function(x) x[2]))
-dat$image_id <- factor(sapply(split_data, function(x) x[3]))
+splitData <- str_split(dat$ID, "x")
+dat$condition <- factor(sapply(splitData, function(x) x[1]))
+dat$patient_id <- factor(sapply(splitData, function(x) x[2]))
+dat$imageId <- factor(sapply(splitData, function(x) x[3]))
 # create a designmatrix
 condition <- dat$condition
 # relevel the condition - can set explicit contrasts here - default is treamtment
@@ -214,7 +214,7 @@ designmat <- model.matrix(~condition)
 colnames(designmat) <- c("Intercept", "conditionLong_duration", "conditionOnset")
 # fit the model
 mdl <- functionalGam(
-    dat = dat, x = metric_res$r |> unique(),
+    dat = dat, x = metricRes$r |> unique(),
     designmat = designmat, weights = dat$weights$npoints,
     formula = formula(Y ~ conditionLong_duration +
         conditionOnset + s(patient_id, bs = "re")),
@@ -222,8 +222,8 @@ mdl <- functionalGam(
 )
 summary(mdl)
 
-plot_ls <- lapply(colnames(designmat), plotMdl, mdl = mdl, shift = mdl$coefficients[["(Intercept)"]])
-wrap_plots(plot_ls, nrow = 3)
+plotLs <- lapply(colnames(designmat), plotMdl, mdl = mdl, shift = mdl$coefficients[["(Intercept)"]])
+wrap_plots(plotLs, nrow = 3)
 ```
 
 We note that there is no difference in the $G$ function between non-diabetic and long duration T1D samples but a strong difference between non-diabetic and onset T1D. This difference is significant after $\sim 30 µm$ and increases at longer distances. Therefore, we don't only see that a spatial difference colocalisation of $\alpha$ and cytotoxic T cells is statistically significant but also at which spatial scale this difference occurs.
@@ -240,7 +240,7 @@ Another analysis that can be performed is functional principal componentent anal
 
 ```{r fPCA}
 # calculate the fPCA
-pca <- functionalPCA(dat = dat, r = metric_res$r |> unique(), knots = 30, pve = 0.99)
+pca <- functionalPCA(dat = dat, r = metricRes$r |> unique(), knots = 30, pve = 0.99)
 # plot the biplot of the first two PCs
 plotFpca(dat = dat, res = pca, colourby = "condition")
 ```
