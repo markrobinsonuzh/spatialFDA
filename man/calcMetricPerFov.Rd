@@ -10,7 +10,7 @@ calcMetricPerFov(
   subsetby = NULL,
   fun,
   marks = NULL,
-  r_seq = NULL,
+  rSeq = NULL,
   by = NULL,
   continuous = FALSE,
   ncores = 1,
@@ -28,7 +28,7 @@ calcMetricPerFov(
 
 \item{marks}{the marks to consider e.g. cell types}
 
-\item{r_seq}{the range of r values to compute the function over}
+\item{rSeq}{the range of r values to compute the function over}
 
 \item{by}{the spe \code{colData} variable(s) to add to the meta data}
 
@@ -50,9 +50,9 @@ spatial metric as implemented by \code{spatstat} per field of view.
 }
 \examples{
 spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-metric_res <- calcMetricPerFov(spe, c("alpha", "beta"),
+metricRes <- calcMetricPerFov(spe, c("alpha", "beta"),
     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-    r_seq = seq(0, 50, length.out = 50), by = c(
+    rSeq = seq(0, 50, length.out = 50), by = c(
         "patient_stage", "patient_id",
         "image_number"
     ),

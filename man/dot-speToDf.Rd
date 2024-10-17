@@ -18,6 +18,6 @@ Transform a SpatialExperiment into a dataframe
 }
 \examples{
 spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-spe_sub <- subset(spe, , image_number == "138")
-df_sub <- .speToDf(spe_sub)
+speSub <- subset(spe, , image_number == "138")
+dfSub <- .speToDf(speSub)
 }

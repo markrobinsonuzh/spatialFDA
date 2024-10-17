@@ -9,7 +9,7 @@
 #' @param selection the mark(s) you want to compare
 #' @param fun the `spatstat` function to compute on the point pattern object
 #' @param marks the marks to consider e.g. cell types
-#' @param r_seq the range of r values to compute the function over
+#' @param rSeq the range of r values to compute the function over
 #' @param by the spe `colData` variable(s) to add to the meta data
 #' @param continuous A boolean indicating whether the marks are continuous
 #' defaults to FALSE
@@ -22,11 +22,11 @@
 #'
 #' @examples
 #' spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-#' spe_sub <- subset(spe, , image_number == "138")
-#' df_sub <- .speToDf(spe_sub)
-#' metric_res <- extractMetric(df_sub, c("alpha", "beta"),
+#' speSub <- subset(spe, , image_number == "138")
+#' dfSub <- .speToDf(speSub)
+#' metricRes <- extractMetric(dfSub, c("alpha", "beta"),
 #'     fun = "Gcross",
-#'     marks = "cell_type", r_seq = seq(0, 1000, length.out = 100),
+#'     marks = "cell_type", rSeq = seq(0, 1000, length.out = 100),
 #'     by = c("patient_stage", "patient_id", "image_number")
 #' )
 #' @import spatstat.explore
@@ -34,98 +34,98 @@ extractMetric <- function(df,
     selection,
     fun,
     marks = NULL,
-    r_seq = NULL,
+    rSeq = NULL,
     by = NULL,
     continuous = FALSE,
     window = NULL,
     ...) {
     pp <- .dfToppp(df, marks = marks, continuous = continuous, window = window)
     if (!continuous) {
-        pp_sub <- subset(pp, marks %in% selection, drop = TRUE)
-        meta_data <- df[, by] %>% unique()
+        ppSub <- subset(pp, marks %in% selection, drop = TRUE)
+        metaData <- df[, by] %>% unique()
     } else {
-        pp_sub <- pp
-        meta_data <- df[, by] %>% unique()
-        meta_data$gene <- names(df)[names(df) %in% marks]
+        ppSub <- pp
+        metaData <- df[, by] %>% unique()
+        metaData$gene <- names(df)[names(df) %in% marks]
     }
     # small quality control to only consider pp that have more than 2 points per
     # fov and more than one unique mark and that each mark has more than one point
-    if (spatstat.geom::npoints(pp_sub) > 2 &&
+    if (spatstat.geom::npoints(ppSub) > 2 &&
         ((length(unique(
-            spatstat.geom::marks(pp_sub)
+            spatstat.geom::marks(ppSub)
         )) > 1 &&
-            sum(table(pp_sub$marks) > 0) > 1) ||
+            sum(table(ppSub$marks) > 0) > 1) ||
             length(selection) == 1)) {
-        metric_res <- tryCatch(
+        metricRes <- tryCatch(
             {
-                metric_res <- do.call(fun,
-                    args = list(X = pp_sub, r = r_seq, ...)
+                metricRes <- do.call(fun,
+                    args = list(X = ppSub, r = rSeq, ...)
                 )
             },
             warning = function(w) {
                 print(w)
-                metric_res <- do.call(fun,
-                    args = list(X = pp_sub, r = r_seq, ...)
+                metricRes <- do.call(fun,
+                    args = list(X = ppSub, r = rSeq, ...)
                 )
             },
             error = function(e) {
                 print(e)
-                metric_res <- data.frame(
-                    r = r_seq,
+                metricRes <- data.frame(
+                    r = rSeq,
                     fun = fun,
-                    row.names = seq(1:length(r_seq))
+                    row.names = seq_along(rSeq)
                 )
             }
         )
     }
     # This handles the case when we do cross functions for the same type
-    else if (spatstat.geom::npoints(pp_sub) > 2 &&
+    else if (spatstat.geom::npoints(ppSub) > 2 &&
         length(unique(selection)) == 1 &&
         length(selection) > 1) {
-        metric_res <- tryCatch(
+        metricRes <- tryCatch(
             {
                 # here we use pp, otherwise there are problems with the
                 # mark connection function
-                metric_res <- do.call(fun, args = list(
+                metricRes <- do.call(fun, args = list(
                     X = pp,
                     i = selection[1],
                     j = selection[2],
-                    r = r_seq,
+                    r = rSeq,
                     ...
                 ))
             },
             warning = function(w) {
                 print(w)
-                metric_res <- do.call(fun, args = list(
+                metricRes <- do.call(fun, args = list(
                     X = pp,
                     i = selection[1],
                     j = selection[2],
-                    r = r_seq,
+                    r = rSeq,
                     ...
                 ))
             },
             error = function(e) {
                 print(e)
-                metric_res <- data.frame(
-                    r = r_seq,
+                metricRes <- data.frame(
+                    r = rSeq,
                     fun = fun,
-                    row.names = seq(1:length(r_seq))
+                    row.names = seq_along(rSeq)
                 )
             }
         )
     } else {
-        metric_res <- data.frame(
-            r = r_seq,
+        metricRes <- data.frame(
+            r = rSeq,
             fun = fun,
-            row.names = seq(1:length(r_seq))
+            row.names = seq_along(rSeq)
         )
     }
-    metric_res <- cbind(metric_res, meta_data)
-    metric_res$npoints <- spatstat.geom::npoints(pp_sub)
-    centroid <- spatstat.geom::centroid.owin(pp_sub$window)
-    metric_res$centroidx <- centroid$x
-    metric_res$centroidy <- centroid$y
-    return(metric_res)
+    metricRes <- cbind(metricRes, metaData)
+    metricRes$npoints <- spatstat.geom::npoints(ppSub)
+    centroid <- spatstat.geom::centroid.owin(ppSub$window)
+    metricRes$centroidx <- centroid$x
+    metricRes$centroidy <- centroid$y
+    return(metricRes)
 }
 
 #' Calculate a spatial metric on a `SpatialExperiment` object per field of view
@@ -138,7 +138,7 @@ extractMetric <- function(df,
 #' @param subsetby the spe `colData` variable to subset the data by
 #' @param fun the `spatstat` function to compute on the point pattern object
 #' @param marks the marks to consider e.g. cell types
-#' @param r_seq the range of r values to compute the function over
+#' @param rSeq the range of r values to compute the function over
 #' @param by the spe `colData` variable(s) to add to the meta data
 #' @param continuous A boolean indicating whether the marks are continuous
 #' defaults to FALSE
@@ -152,9 +152,9 @@ extractMetric <- function(df,
 #'
 #' @examples
 #' spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-#' metric_res <- calcMetricPerFov(spe, c("alpha", "beta"),
+#' metricRes <- calcMetricPerFov(spe, c("alpha", "beta"),
 #'     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-#'     r_seq = seq(0, 50, length.out = 50), by = c(
+#'     rSeq = seq(0, 50, length.out = 50), by = c(
 #'         "patient_stage", "patient_id",
 #'         "image_number"
 #'     ),
@@ -162,33 +162,33 @@ extractMetric <- function(df,
 #' )
 #' @import dplyr parallel
 calcMetricPerFov <- function(spe, selection, subsetby = NULL, fun, marks = NULL,
-    r_seq = NULL, by = NULL, continuous = FALSE, ncores = 1, ...) {
+    rSeq = NULL, by = NULL, continuous = FALSE, ncores = 1, ...) {
     df <- .speToDf(spe)
     # we have one case for discrete cell types where we have one column to subset
     if (length(subsetby) == 1) {
-        df_ls <- split(df, df[[subsetby]])
+        dfLs <- split(df, df[[subsetby]])
     } else {
-        df_ls <- purrr::map(subsetby, ~ df %>%
+        dfLs <- purrr::map(subsetby, ~ df %>%
             select(all_of(setdiff(names(df), subsetby)), .x))
     }
-    metric_df <- parallel::mclapply(df_ls, function(df_sub) {
-        metric_res <- extractMetric(
-            df = df_sub,
+    metricDf <- parallel::mclapply(dfLs, function(dfSub) {
+        metricRes <- extractMetric(
+            df = dfSub,
             selection = selection,
             fun = fun,
             marks = marks,
-            r_seq = r_seq,
+            rSeq = rSeq,
             by = by,
             continuous = continuous,
             ...
         ) %>% as.data.frame()
-        return(metric_res)
+        return(metricRes)
     }, mc.cores = ncores) %>% bind_rows()
     # store metadata of the calculation in the dataframe
-    metric_df$ID <- paste0(metric_df[[by[1]]], "|", metric_df[[by[2]]])
-    metric_df$fun <- fun
-    metric_df$selection <- paste(selection, collapse = " and ")
-    return(metric_df)
+    metricDf$ID <- paste0(metricDf[[by[1]]], "|", metricDf[[by[2]]])
+    metricDf$fun <- fun
+    metricDf$selection <- paste(selection, collapse = " and ")
+    return(metricDf)
 }
 
 
@@ -203,7 +203,7 @@ calcMetricPerFov <- function(spe, selection, subsetby = NULL, fun, marks = NULL,
 #' @param subsetby the spe `colData` variable to subset the data by
 #' @param fun the `spatstat` function to compute on the point pattern object
 #' @param marks the marks to consider e.g. cell types
-#' @param r_seq the range of r values to compute the function over
+#' @param rSeq the range of r values to compute the function over
 #' @param by the spe `colData` variable(s) to add to the meta data
 #' @param ncores the number of cores to use for parallel processing, default = 1
 #' @param continuous A boolean indicating whether the marks are continuous
@@ -217,9 +217,9 @@ calcMetricPerFov <- function(spe, selection, subsetby = NULL, fun, marks = NULL,
 #'
 #' @examples
 #' spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-#' metric_res <- calcCrossMetricPerFov(spe, c("alpha", "beta", "delta"),
+#' metricRes <- calcCrossMetricPerFov(spe, c("alpha", "beta", "delta"),
 #'     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-#'     r_seq = seq(0, 50, length.out = 50), by = c(
+#'     rSeq = seq(0, 50, length.out = 50), by = c(
 #'         "patient_stage", "patient_id",
 #'         "image_number"
 #'     ),
@@ -227,23 +227,23 @@ calcMetricPerFov <- function(spe, selection, subsetby = NULL, fun, marks = NULL,
 #' )
 calcCrossMetricPerFov <- function(
         spe, selection, subsetby = NULL, fun,
-        marks = NULL, r_seq = NULL, by = NULL,
+        marks = NULL, rSeq = NULL, by = NULL,
         ncores = 1, continuous = FALSE, ...) {
     # Special case of dot functions
     if (grepl("dot", fun)) {
         # one vs all other
         ls <- unique(selection)
         # calculate the metric per FOV
-        res_ls <- lapply(ls, function(x) {
+        resLs <- lapply(ls, function(x) {
             print(x)
             calcMetricPerFov(
                 spe = spe, selection = x, subsetby = subsetby, fun = fun,
-                marks = marks, r_seq = r_seq, by = by, ncores = ncores,
+                marks = marks, rSeq = rSeq, by = by, ncores = ncores,
                 continuous = continuous, ...
             )
         })
         # Bind the data and return
-        return(bind_rows(res_ls))
+        return(bind_rows(resLs))
     } else {
         # This creates a grid with all possible 2 way combinations
         ls <- apply(expand.grid(selection, selection), 1, function(x) {
@@ -251,15 +251,15 @@ calcCrossMetricPerFov <- function(
         }) |> t()
 
         # calculate the metric per FOV
-        res_ls <- apply(ls, 1, function(x) {
+        resLs <- apply(ls, 1, function(x) {
             calcMetricPerFov(
                 spe = spe, selection = x, subsetby = subsetby, fun = fun,
-                marks = marks, r_seq = r_seq, by = by, ncores = ncores,
+                marks = marks, rSeq = rSeq, by = by, ncores = ncores,
                 continuous = continuous
             )
         })
 
         # Bind the data and return
-        return(bind_rows(res_ls))
+        return(bind_rows(resLs))
     }
 }

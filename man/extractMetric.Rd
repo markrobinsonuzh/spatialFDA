@@ -9,7 +9,7 @@ extractMetric(
   selection,
   fun,
   marks = NULL,
-  r_seq = NULL,
+  rSeq = NULL,
   by = NULL,
   continuous = FALSE,
   window = NULL,
@@ -26,7 +26,7 @@ extractMetric(
 
 \item{marks}{the marks to consider e.g. cell types}
 
-\item{r_seq}{the range of r values to compute the function over}
+\item{rSeq}{the range of r values to compute the function over}
 
 \item{by}{the spe \code{colData} variable(s) to add to the meta data}
 
@@ -48,11 +48,11 @@ object.
 }
 \examples{
 spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-spe_sub <- subset(spe, , image_number == "138")
-df_sub <- .speToDf(spe_sub)
-metric_res <- extractMetric(df_sub, c("alpha", "beta"),
+speSub <- subset(spe, , image_number == "138")
+dfSub <- .speToDf(speSub)
+metricRes <- extractMetric(dfSub, c("alpha", "beta"),
     fun = "Gcross",
-    marks = "cell_type", r_seq = seq(0, 1000, length.out = 100),
+    marks = "cell_type", rSeq = seq(0, 1000, length.out = 100),
     by = c("patient_stage", "patient_id", "image_number")
 )
 }

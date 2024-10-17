@@ -5,16 +5,16 @@
 \title{Plot a spatial metric per field of view}
 \usage{
 plotMetricPerFov(
-  metric_df,
+  metricDf,
   theo = FALSE,
   correction = NULL,
   x = NULL,
-  image_id = NULL,
+  imageId = NULL,
   ID = NULL
 )
 }
 \arguments{
-\item{metric_df}{the metric \code{dataframe} as calculated by \code{calcMetricPerFov}}
+\item{metricDf}{the metric \code{dataframe} as calculated by \code{calcMetricPerFov}}
 
 \item{theo}{logical; if the theoretical line should be plotted}
 
@@ -22,7 +22,7 @@ plotMetricPerFov(
 
 \item{x}{the x-axis variable to plot}
 
-\item{image_id}{the ID of the image/fov}
+\item{imageId}{the ID of the image/fov}
 
 \item{ID}{the (optional) ID for plotting combinations}
 }
@@ -35,17 +35,17 @@ contains one curve per FOV and makes subplots by samples.
 }
 \examples{
 spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-metric_res <- calcMetricPerFov(spe, c("alpha", "beta"),
+metricRes <- calcMetricPerFov(spe, c("alpha", "beta"),
     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-    r_seq = seq(0, 50, length.out = 50), by = c(
+    rSeq = seq(0, 50, length.out = 50), by = c(
         "patient_stage", "patient_id",
         "image_number"
     ),
     ncores = 1
 )
-p <- plotMetricPerFov(metric_res,
+p <- plotMetricPerFov(metricRes,
     correction = "rs", x = "r",
-    image_id = "image_number", ID = "ID"
+    imageId = "image_number", ID = "ID"
 )
 print(p)
 }

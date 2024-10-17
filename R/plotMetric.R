@@ -3,11 +3,11 @@
 #' A function that plots the output of the function `calcMetricPerFov`. The plot
 #' contains one curve per FOV and makes subplots by samples.
 #'
-#' @param metric_df the metric `dataframe` as calculated by `calcMetricPerFov`
+#' @param metricDf the metric `dataframe` as calculated by `calcMetricPerFov`
 #' @param theo logical; if the theoretical line should be plotted
 #' @param correction the border correction to plot
 #' @param x the x-axis variable to plot
-#' @param image_id the ID of the image/fov
+#' @param imageId the ID of the image/fov
 #' @param ID the (optional) ID for plotting combinations
 #'
 #' @return a `ggplot` object
@@ -15,25 +15,25 @@
 #'
 #' @examples
 #' spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-#' metric_res <- calcMetricPerFov(spe, c("alpha", "beta"),
+#' metricRes <- calcMetricPerFov(spe, c("alpha", "beta"),
 #'     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-#'     r_seq = seq(0, 50, length.out = 50), by = c(
+#'     rSeq = seq(0, 50, length.out = 50), by = c(
 #'         "patient_stage", "patient_id",
 #'         "image_number"
 #'     ),
 #'     ncores = 1
 #' )
-#' p <- plotMetricPerFov(metric_res,
+#' p <- plotMetricPerFov(metricRes,
 #'     correction = "rs", x = "r",
-#'     image_id = "image_number", ID = "ID"
+#'     imageId = "image_number", ID = "ID"
 #' )
 #' print(p)
 #' @import dplyr ggplot2
-plotMetricPerFov <- function(metric_df, theo = FALSE, correction = NULL,
-    x = NULL, image_id = NULL, ID = NULL) {
-    p <- ggplot(metric_df, aes(
+plotMetricPerFov <- function(metricDf, theo = FALSE, correction = NULL,
+    x = NULL, imageId = NULL, ID = NULL) {
+    p <- ggplot(metricDf, aes(
         x = .data[[x]], y = .data[[correction]],
-        group = factor(.data[[image_id]])
+        group = factor(.data[[imageId]])
     ))
     if (!is.null(ID)) {
         p <- p +
@@ -41,14 +41,14 @@ plotMetricPerFov <- function(metric_df, theo = FALSE, correction = NULL,
             facet_wrap(selection ~ ID)
     } else {
         p <- p +
-            geom_line(aes(colour = factor(.data[[image_id]])))
+            geom_line(aes(colour = factor(.data[[imageId]])))
     }
     p <- p +
         theme_minimal() +
         theme(legend.position = "none") +
         labs(title = paste0(
-            metric_df$fun, " metric for ",
-            unique(metric_df$selection)
+            metricDf$fun, " metric for ",
+            unique(metricDf$selection)
         ))
     if (theo == TRUE) {
         p <- p + geom_line(aes(x = .data[[x]], y = theo),
@@ -60,27 +60,27 @@ plotMetricPerFov <- function(metric_df, theo = FALSE, correction = NULL,
 
 #' Creates a nXn plot of the cross metrics per sample
 #'
-#' @param sub_fov a subset of the `dataframe` to the respective fov
+#' @param subFov a subset of the `dataframe` to the respective fov
 #' @param theo logical; if the theoretical line should be plotted
 #' @param correction the border correction to plot
 #' @param x the x-axis variable to plot
-#' @param image_id the ID of the image/fov
+#' @param imageId the ID of the image/fov
 #' @param ID the (optional) ID for plotting combinations
 #'
 #' @return a ggplot object
 #' @export
 #'
-plotCrossFOV <- function(sub_fov, theo, correction, x, image_id, ID = NULL) {
+plotCrossFOV <- function(subFov, theo, correction, x, imageId, ID = NULL) {
     #  Apply plot metric function for each combination
-    lp <- lapply(unique(sub_fov$selection), function(sel) {
+    lp <- lapply(unique(subFov$selection), function(sel) {
         plotMetricPerFov(
-            metric_df = sub_fov[sub_fov$selection == sel, ],
+            metricDf = subFov[subFov$selection == sel, ],
             theo = theo, correction = correction, x = x,
-            image_id = image_id, ID = ID
+            imageId = imageId, ID = ID
         )
     })
     #  Count number of marks
-    nMarks <- length(unique(sub_fov$selection))
+    nMarks <- length(unique(subFov$selection))
     # Wraps the plot in an nXn grid
     p <- patchwork::wrap_plots(lp, ncol = sqrt(nMarks)) +
         patchwork::plot_layout(guides = "collect") &
@@ -91,11 +91,11 @@ plotCrossFOV <- function(sub_fov, theo, correction, x, image_id, ID = NULL) {
 
 #' Plot a cross type spatial metric per field of view
 #'
-#' @param metric_df the metric dataframe as calculated by calcMetricPerFov
+#' @param metricDf the metric dataframe as calculated by calcMetricPerFov
 #' @param theo logical; if the theoretical line should be plotted
 #' @param correction the border correction to plot
 #' @param x the x-axis variable to plot
-#' @param image_id the ID of the image/fov
+#' @param imageId the ID of the image/fov
 #' @param ID the (optional) ID for plotting combinations
 #'
 #' @return a ggplot object
@@ -103,38 +103,38 @@ plotCrossFOV <- function(sub_fov, theo, correction, x, image_id, ID = NULL) {
 #'
 #' @examples
 #' spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-#' metric_res <- calcCrossMetricPerFov(spe, c("alpha", "beta", "delta"),
+#' metricRes <- calcCrossMetricPerFov(spe, c("alpha", "beta", "delta"),
 #'     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-#'     r_seq = seq(0, 50, length.out = 50), by = c(
+#'     rSeq = seq(0, 50, length.out = 50), by = c(
 #'         "patient_stage", "patient_id",
 #'         "image_number"
 #'     ),
 #'     ncores = 1
 #' )
-#' metric_res <- subset(metric_res, image_number %in% c(138, 139, 140))
-#' p <- plotCrossMetricPerFov(metric_res,
+#' metricRes <- subset(metricRes, image_number %in% c(138, 139, 140))
+#' p <- plotCrossMetricPerFov(metricRes,
 #'     theo = TRUE, correction = "rs",
-#'     x = "r", image_id = "image_number", ID = "ID"
+#'     x = "r", imageId = "image_number", ID = "ID"
 #' )
 #' print(p)
 plotCrossMetricPerFov <- function(
-        metric_df,
+        metricDf,
         theo = NULL,
         correction = NULL,
         x = NULL,
-        image_id = NULL,
+        imageId = NULL,
         ID = NULL) {
     # Find all unique samples
-    samples <- metric_df[[image_id]] |> unique()
+    samples <- metricDf[[imageId]] |> unique()
 
     # Applies the function abouve to all samples
-    res_p <- lapply(samples, function(fov) {
-        sub_fov <- metric_df[metric_df[[image_id]] %in% fov, ]
+    resP <- lapply(samples, function(fov) {
+        subFov <- metricDf[metricDf[[imageId]] %in% fov, ]
         return(plotCrossFOV(
-            sub_fov = sub_fov, theo = theo, correction = correction,
-            x = x, image_id = image_id, ID = ID
+            subFov = subFov, theo = theo, correction = correction,
+            x = x, imageId = imageId, ID = ID
         ))
     })
 
-    return(res_p)
+    return(resP)
 }

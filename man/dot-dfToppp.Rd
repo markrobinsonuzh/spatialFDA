@@ -27,8 +27,8 @@ Convert SpatialExperiment object to ppp object
 }
 \examples{
 spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-spe_sub <- subset(spe, , image_number == "138")
-df_sub <- .speToDf(spe_sub)
-pp <- .dfToppp(df_sub, marks = "cell_type")
+speSub <- subset(spe, , image_number == "138")
+dfSub <- .speToDf(speSub)
+pp <- .dfToppp(dfSub, marks = "cell_type")
 
 }
