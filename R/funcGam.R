@@ -57,7 +57,7 @@
 #' )
 #' # fit the model
 #' mdl <- functionalGam(
-#'     dat = dat, x = metricRes$r |> unique(),
+#'     data = dat, x = metricRes$r |> unique(),
 #'     designmat = designmat, weights = dat$weights$npoints,
 #'     formula = formula(Y ~ conditionLong_duration +
 #'         conditionOnset + s(patient_id, bs = "re"))
@@ -73,11 +73,8 @@ functionalGam <- function(data, x, designmat, weights, formula, ...) {
     stopifnot(is(designmat, "matrix"))
     stopifnot(is(weights, "integer"))
     stopifnot(is(formula, "formula"))
-    # get the colnames
-    colnam <- colnames(designmat)
-    for (i in 1:length(colnam)) {
-        data[[colnam[i]]] <- designmat[, i]
-    }
+
+    data <- cbind(data, designmat)
     # TODO how to make weighting optional?
     # normalise the weights
     weights <- weights / mean(weights)

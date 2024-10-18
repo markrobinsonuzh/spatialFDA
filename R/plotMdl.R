@@ -52,7 +52,7 @@
 #' )
 #' # fit the model
 #' mdl <- functionalGam(
-#'     dat = dat, x = metricRes$r |> unique(),
+#'     data = dat, x = metricRes$r |> unique(),
 #'     designmat = designmat, weights = dat$weights$npoints,
 #'     formula = formula(Y ~ conditionLong_duration +
 #'         conditionOnset + s(patient_id, bs = "re"))
