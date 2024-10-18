@@ -67,6 +67,12 @@
 #' @import dplyr
 
 functionalGam <- function(data, x, designmat, weights, formula, ...) {
+    # type checking
+    stopifnot(is(data, "data.frame"))
+    stopifnot(is(x, "vector"))
+    stopifnot(is(designmat, "matrix"))
+    stopifnot(is(weights, "integer"))
+    stopifnot(is(formula, "formula"))
     # get the colnames
     colnam <- colnames(designmat)
     for (i in 1:length(colnam)) {

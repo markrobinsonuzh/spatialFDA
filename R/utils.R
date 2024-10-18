@@ -19,6 +19,8 @@
 #'
 #' @importFrom SummarizedExperiment colData
 .dfToppp <- function(df, marks = NULL, continuous = FALSE, window = NULL) {
+    #type checking
+    stopifnot(is(df, 'data.frame'))
     # this definition of the window is quite conservative - can be set explicitly
     pp <- spatstat.geom::as.ppp(data.frame(x = df$x, y = df$y),
         W = spatstat.geom::owin(
@@ -59,6 +61,7 @@
 #' speSub <- subset(spe, , image_number == "138")
 #' dfSub <- .speToDf(speSub)
 .speToDf <- function(spe) {
+    stopifnot(is(spe, "SpatialExperiment"))
     df <- data.frame(
         x = SpatialExperiment::spatialCoords(spe)[, 1],
         y = SpatialExperiment::spatialCoords(spe)[, 2]

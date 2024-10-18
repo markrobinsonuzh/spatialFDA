@@ -24,13 +24,13 @@
 #' spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
 #' speSub <- subset(spe, , image_number == "138")
 #' dfSub <- .speToDf(speSub)
-#' metricRes <- extractMetric(dfSub, c("alpha", "beta"),
+#' metricRes <- .extractMetric(dfSub, c("alpha", "beta"),
 #'     fun = "Gcross",
 #'     marks = "cell_type", rSeq = seq(0, 1000, length.out = 100),
 #'     by = c("patient_stage", "patient_id", "image_number")
 #' )
 #' @import spatstat.explore
-extractMetric <- function(df,
+.extractMetric <- function(df,
     selection,
     fun,
     marks = NULL,
@@ -39,6 +39,7 @@ extractMetric <- function(df,
     continuous = FALSE,
     window = NULL,
     ...) {
+    stopifnot(is(df, 'data.frame'))
     pp <- .dfToppp(df, marks = marks, continuous = continuous, window = window)
     if (!continuous) {
         ppSub <- subset(pp, marks %in% selection, drop = TRUE)
@@ -163,6 +164,12 @@ extractMetric <- function(df,
 #' @import dplyr parallel
 calcMetricPerFov <- function(spe, selection, subsetby = NULL, fun, marks = NULL,
     rSeq = NULL, by = NULL, continuous = FALSE, ncores = 1, ...) {
+    # type checking of input
+    stopifnot(is(spe, "SpatialExperiment"))
+    stopifnot(is(fun, "character"))
+    stopifnot(is(marks, "character"))
+    stopifnot(is(ncores, "numeric"))
+
     df <- .speToDf(spe)
     # we have one case for discrete cell types where we have one column to subset
     if (length(subsetby) == 1) {
@@ -172,7 +179,7 @@ calcMetricPerFov <- function(spe, selection, subsetby = NULL, fun, marks = NULL,
             select(all_of(setdiff(names(df), subsetby)), .x))
     }
     metricDf <- parallel::mclapply(dfLs, function(dfSub) {
-        metricRes <- extractMetric(
+        metricRes <- .extractMetric(
             df = dfSub,
             selection = selection,
             fun = fun,
@@ -229,6 +236,12 @@ calcCrossMetricPerFov <- function(
         spe, selection, subsetby = NULL, fun,
         marks = NULL, rSeq = NULL, by = NULL,
         ncores = 1, continuous = FALSE, ...) {
+    # type checking of input
+    stopifnot(is(spe, "SpatialExperiment"))
+    stopifnot(is(fun, "character"))
+    stopifnot(is(marks, "character"))
+    stopifnot(is(ncores, "numeric"))
+
     # Special case of dot functions
     if (grepl("dot", fun)) {
         # one vs all other

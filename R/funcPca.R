@@ -46,6 +46,10 @@
 #' )
 #' @import dplyr
 functionalPCA <- function(dat, r, knots, pve = 0.95) {
+    stopifnot(is(dat, 'data.frame'))
+    stopifnot(is(r, 'vector'))
+    stopifnot(is(knots, 'numeric'))
+    stopifnot(is(pve, 'numeric'))
     # calculate the fPCA - this is a bit a pointless wrapper until now
     res <- refund::fpca.face(
         Y = dat$Y, center = TRUE, argvals = r,
@@ -106,6 +110,8 @@ functionalPCA <- function(dat, r, knots, pve = 0.95) {
 #' print(p)
 #' @import dplyr
 plotFpca <- function(dat, res, colourby = NULL, labelby = NULL) {
+    stopifnot(is(dat, 'data.frame'))
+    stopifnot(is(res, 'fpca'))
     scoresDf <- res$scores %>% as.data.frame()
     # plot fCPA results - assumes same order of fPCA results and input data
     p <- ggplot(scoresDf, aes(scoresDf[, 1], scoresDf[, 2],
