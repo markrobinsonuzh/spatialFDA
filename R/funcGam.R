@@ -13,6 +13,10 @@
 #' normalised by the mean of the weights in the fitting process
 #' @param formula the formula for the model. The colnames of the designmatrix
 #' have to correspond to the variables in the formula.
+#' @param family the distributional family as implemented in `family.mgcv`. For
+#' fast computation the default is set to `gaussian`. If the covariance scales
+#' e.g. as a function of the domain, this estimation can be improved with
+#' `gaulss` - for more information see `family.mgcv`.
 #' @param ... Other parameters passed to `pffr`
 #'
 #' @return a fitted pffr object which inherits from gam
@@ -66,13 +70,15 @@
 
 #' @import dplyr
 
-functionalGam <- function(data, x, designmat, weights, formula, ...) {
+functionalGam <- function(data, x, designmat, weights, formula,
+                          family = 'gaussian', ...) {
     # type checking
     stopifnot(is(data, "data.frame"))
     stopifnot(is(x, "vector"))
     stopifnot(is(designmat, "matrix"))
     stopifnot(is(weights, "integer"))
     stopifnot(is(formula, "formula"))
+    stopifnot(is(family, "character"))
 
     data <- cbind(data, designmat)
     # TODO how to make weighting optional?
@@ -83,6 +89,7 @@ functionalGam <- function(data, x, designmat, weights, formula, ...) {
         yind = x,
         data = data,
         weights = weights,
+        family = family,
         ...
     )
     return(mdl)

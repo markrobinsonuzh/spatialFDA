@@ -4,7 +4,7 @@
 \alias{functionalGam}
 \title{General additive model with functional response}
 \usage{
-functionalGam(data, x, designmat, weights, formula, ...)
+functionalGam(data, x, designmat, weights, formula, family = "gaussian", ...)
 }
 \arguments{
 \item{data}{a dataframe with the following columns: Y = functional response;
@@ -19,6 +19,11 @@ normalised by the mean of the weights in the fitting process}
 
 \item{formula}{the formula for the model. The colnames of the designmatrix
 have to correspond to the variables in the formula.}
+
+\item{family}{the distributional family as implemented in \code{family.mgcv}. For
+fast computation the default is set to \code{gaussian}. If the covariance scales
+e.g. as a function of the domain, this estimation can be improved with
+\code{gaulss} - for more information see \code{family.mgcv}.}
 
 \item{...}{Other parameters passed to \code{pffr}}
 }

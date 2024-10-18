@@ -214,11 +214,11 @@ designmat <- model.matrix(~condition)
 colnames(designmat) <- c("Intercept", "conditionLong_duration", "conditionOnset")
 # fit the model
 mdl <- functionalGam(
-    dat = dat, x = metricRes$r |> unique(),
+    data = dat, x = metricRes$r |> unique(),
     designmat = designmat, weights = dat$weights$npoints,
     formula = formula(Y ~ conditionLong_duration +
         conditionOnset + s(patient_id, bs = "re")),
-    family = 'gaulss'
+    family = 'gaussian'
 )
 summary(mdl)
 
