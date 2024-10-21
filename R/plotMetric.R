@@ -29,6 +29,7 @@
 #' )
 #' print(p)
 #' @import dplyr ggplot2
+#' @importFrom methods is
 plotMetricPerFov <- function(metricDf, theo = FALSE, correction = NULL,
     x = NULL, imageId = NULL, ID = NULL) {
     # type checking
@@ -74,6 +75,7 @@ plotMetricPerFov <- function(metricDf, theo = FALSE, correction = NULL,
 #' @return a ggplot object
 #' @export
 #'
+#' @importFrom methods is
 plotCrossFOV <- function(subFov, theo, correction, x, imageId, ID = NULL) {
     # type checking
     stopifnot(is(subFov, "data.frame"))
@@ -123,6 +125,7 @@ plotCrossFOV <- function(subFov, theo, correction, x, imageId, ID = NULL) {
 #'     x = "r", imageId = "image_number", ID = "ID"
 #' )
 #' print(p)
+#' @importFrom methods is
 plotCrossMetricPerFov <- function(
         metricDf,
         theo = NULL,

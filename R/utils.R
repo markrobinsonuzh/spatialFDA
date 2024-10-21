@@ -18,6 +18,7 @@
 #' pp <- .dfToppp(dfSub, marks = "cell_type")
 #'
 #' @importFrom SummarizedExperiment colData
+#' @importFrom methods is
 .dfToppp <- function(df, marks = NULL, continuous = FALSE, window = NULL) {
     #type checking
     stopifnot(is(df, 'data.frame'))
@@ -61,6 +62,7 @@
 #' spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
 #' speSub <- subset(spe, , image_number == "138")
 #' dfSub <- .speToDf(speSub)
+#' @importFrom methods is
 .speToDf <- function(spe) {
     stopifnot(is(spe, "SpatialExperiment"))
     df <- data.frame(

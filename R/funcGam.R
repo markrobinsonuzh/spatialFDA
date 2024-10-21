@@ -69,7 +69,7 @@
 #' summary(mdl)
 
 #' @import dplyr
-
+#' @importFrom methods is
 functionalGam <- function(data, x, designmat, weights, formula,
                           family = "gaussian", ...) {
     # type checking

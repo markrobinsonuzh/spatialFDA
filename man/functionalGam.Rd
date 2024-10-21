@@ -32,9 +32,9 @@ a fitted pffr object which inherits from gam
 }
 \description{
 A function that takes the output of a metric calculation as done by
-\code{calcMetricPerFov}. The data has to be prepared into the correct format for the
-functional analysis by the \code{prepData} function. The output is a \code{pffr} object
-as implemented by \code{refund}.
+\code{calcMetricPerFov}. The data has to be prepared into the correct format for
+the functional analysis by the \code{prepData} function. The output is a \code{pffr}
+object as implemented by \code{refund}.
 }
 \examples{
 # load the pancreas dataset

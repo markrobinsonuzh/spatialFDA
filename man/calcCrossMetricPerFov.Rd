@@ -59,4 +59,5 @@ metricRes <- calcCrossMetricPerFov(spe, c("alpha", "beta", "delta"),
     ),
     ncores = 1
 )
+
 }

@@ -4,11 +4,11 @@
 \alias{functionalPCA}
 \title{Functional Principal Component Analysis}
 \usage{
-functionalPCA(dat, r, knots, pve = 0.95)
+functionalPCA(data, r, knots, pve = 0.95)
 }
 \arguments{
-\item{dat}{a data object for functional data analysis containing at least the
-the functional}
+\item{data}{a data object for functional data analysis containing at least
+the functional response $Y$.}
 
 \item{r}{the functional domain}
 
@@ -52,7 +52,7 @@ dat$patient_id <- factor(sapply(splitData, function(x) x[2]))
 dat$image_id <- factor(sapply(splitData, function(x) x[3]))
 # calculate fPCA
 mdl <- functionalPCA(
-    dat = dat, r = metricRes$r |> unique(),
+    data = dat, r = metricRes$r |> unique(),
     knots = 30, pve = 0.99
 )
 }

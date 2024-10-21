@@ -27,6 +27,7 @@
 #' )
 #' dat <- prepData(metricRes, "r", "rs")
 #' @import tidyr
+#' @importFrom methods is
 prepData <- function(metricRes, x, y) {
     # type checking
     stopifnot(is(metricRes, "data.frame"))

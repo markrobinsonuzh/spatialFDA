@@ -63,6 +63,7 @@
 #'     shift = mdl$coefficients[["(Intercept)"]]
 #' )
 #' @import dplyr
+#' @importFrom methods is
 plotMdl <- function(mdl, predictor, shift = NULL) {
     # type checking
     stopifnot(is(mdl, "pffr"))
@@ -76,13 +77,13 @@ plotMdl <- function(mdl, predictor, shift = NULL) {
     # get the actual values into a dataframe
     df <- coef$sm[[paste0(predictor, "(x)")]]$coef
     # plot
-    p <- ggplot(df, aes(.data[[x.vec]], .data[[value]])) +
+    p <- ggplot(df, aes(.data$x.vec, .data$value)) +
         geom_line(size = 1) +
         # here, I implement a Wald CI - could be improved
         geom_ribbon(
             data = df,
-            aes(ymin = .data[[value]] - 1.96 * .data[[se]],
-                ymax = .data[[value]] + 1.96 * .data[[se]]),
+            aes(ymin = .data$value - 1.96 * .data$se,
+                ymax = .data$value + 1.96 * .data$se),
             alpha = 0.3
         ) +
         geom_hline(

@@ -30,6 +30,7 @@
 #'     by = c("patient_stage", "patient_id", "image_number")
 #' )
 #' @import spatstat.explore
+#' @importFrom methods is
 .extractMetric <- function(df,
     selection,
     fun,
@@ -161,6 +162,7 @@
 #'     ncores = 1
 #' )
 #' @import dplyr parallel
+#' @importFrom methods is
 calcMetricPerFov <- function(spe, selection, subsetby = NULL, fun, marks = NULL,
     rSeq = NULL, by = NULL, continuous = FALSE, ncores = 1, ...) {
     # type checking of input
@@ -231,6 +233,8 @@ calcMetricPerFov <- function(spe, selection, subsetby = NULL, fun, marks = NULL,
 #'     ),
 #'     ncores = 1
 #' )
+#'
+#' @importFrom methods is
 calcCrossMetricPerFov <- function(
         spe, selection, subsetby = NULL, fun,
         marks = NULL, rSeq = NULL, by = NULL,

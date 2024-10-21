@@ -29,7 +29,8 @@ Imports:
     spatstat.explore,
     spatstat.geom,
     SummarizedExperiment,
-    tidyr
+    tidyr,
+    methods
 biocViews: Software, Spatial, Transcriptomics
 VignetteBuilder: knitr
 Suggests: 

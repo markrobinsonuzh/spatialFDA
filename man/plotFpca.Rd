@@ -4,11 +4,11 @@
 \alias{plotFpca}
 \title{Plot a biplot from an fPCA analysis}
 \usage{
-plotFpca(dat, res, colourby = NULL, labelby = NULL)
+plotFpca(data, res, colourby = NULL, labelby = NULL)
 }
 \arguments{
-\item{dat}{a data object for functional data analysis containing at least the
-the functional}
+\item{data}{a data object for functional data analysis containing at least
+the functional response $Y$.}
 
 \item{res}{the output from the fPCA calculation}
 
@@ -20,8 +20,8 @@ the functional}
 a list with components of fpca.face
 }
 \description{
-A function that takes the output from the \code{functionalPCA} function and returns
-a \code{ggplot} object of the first two dimensions of the PCA as biplot.
+A function that takes the output from the \code{functionalPCA} function and
+returns a \code{ggplot} object of the first two dimensions of the PCA as biplot.
 }
 \examples{
 # load the pancreas dataset
@@ -51,11 +51,11 @@ dat$patient_id <- factor(sapply(splitData, function(x) x[2]))
 dat$image_id <- factor(sapply(splitData, function(x) x[3]))
 # calculate fPCA
 mdl <- functionalPCA(
-    dat = dat, r = metricRes$r |> unique(),
+    data = dat, r = metricRes$r |> unique(),
     knots = 30, pve = 0.99
 )
 p <- plotFpca(
-    dat = dat, res = mdl, colourby = "condition",
+    data = dat, res = mdl, colourby = "condition",
     labelby = "patient_id"
 )
 print(p)
