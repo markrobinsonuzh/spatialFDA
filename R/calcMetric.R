@@ -171,6 +171,11 @@ calcMetricPerFov <- function(spe, selection, subsetby = NULL, fun, marks = NULL,
     stopifnot(is(marks, "character"))
     stopifnot(is(ncores, "numeric"))
 
+    # check if the provide marks are in the column marks of spe colData
+    if (sum(!(selection %in% colData(spe)[[marks]]))>0){
+      stop(paste0("not all marks of ", selection ,
+                  " are in the colData ", marks ,  " of the spe"))
+    }
     df <- .speToDf(spe)
     # we have one case for discrete cell types where we have one column to subset
     if (length(subsetby) == 1) {
