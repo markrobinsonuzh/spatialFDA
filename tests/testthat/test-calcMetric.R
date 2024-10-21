@@ -57,7 +57,8 @@ test_that("Function fails if marks not in ColData", {
 
 # Test function calcCrossMetricPerFov
 test_that("Cross function output has correct dimensions", {
-  metricRes <- calcCrossMetricPerFov(spe, c("alpha", "beta", "delta"),
+  selection <- c("alpha", "beta", "delta")
+  metricRes <- calcCrossMetricPerFov(spe, selection,
                                      subsetby = "image_number", fun = "Gcross",
                                      marks = "cell_type",
                                      rSeq = seq(0, 50, length.out = 50), by = c(
@@ -72,7 +73,8 @@ test_that("Cross function output has correct dimensions", {
 })
 
 test_that("Cross function output has correct dimensions for Kdot", {
-  metricRes <- calcCrossMetricPerFov(spe, c("alpha", "beta", "delta"),
+  selection <- c("alpha", "beta", "delta")
+  metricRes <- calcCrossMetricPerFov(spe, selection,
                                      subsetby = "image_number", fun = "Kdot",
                                      marks = "cell_type",
                                      rSeq = seq(0, 50, length.out = 50), by = c(
