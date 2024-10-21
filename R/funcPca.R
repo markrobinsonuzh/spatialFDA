@@ -45,6 +45,7 @@
 #'     knots = 30, pve = 0.99
 #' )
 #' @import dplyr
+#' @importFrom methods is
 functionalPCA <- function(data, r, knots, pve = 0.95) {
     stopifnot(is(data, "data.frame"))
     stopifnot(is(r, "vector"))
@@ -109,6 +110,7 @@ functionalPCA <- function(data, r, knots, pve = 0.95) {
 #' )
 #' print(p)
 #' @import dplyr
+#' @importFrom methods is
 plotFpca <- function(data, res, colourby = NULL, labelby = NULL) {
     stopifnot(is(data, "data.frame"))
     stopifnot(is(res, "fpca"))
@@ -132,14 +134,52 @@ plotFpca <- function(data, res, colourby = NULL, labelby = NULL) {
 
 #' print the fPCA results
 #'
-#' this is a function that prints a summary of the fPCA result
+#' this is a function that prints a summary of the fPCA result of class `fpca`
 #'
-#' @param res the result of function `functionalPCA`
+#' @param x the result of function `functionalPCA`
+#' @param ... other parameters passed to base generic function `print`
 #'
-#' @return
+#' @return a formatted overview of the fPCA result
 #' @export
 #'
 #' @examples
-print.functionalPCA <- function(res) {
-
+#' # load the pancreas dataset
+#' library("tidyr")
+#' library("stringr")
+#' library("dplyr")
+#' spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
+#' # calculate the Gcross metric for alpha and beta cells
+#' metricRes <- calcMetricPerFov(spe, c("alpha", "beta"),
+#'     subsetby = "image_number", fun = "Gcross",
+#'     marks = "cell_type", rSeq = seq(0, 50, length.out = 50),
+#'     c("patient_stage", "patient_id", "image_number"), ncores = 1
+#' )
+#' metricRes$ID <- paste0(
+#'     metricRes$patient_stage, "x", metricRes$patient_id,
+#'     "x", metricRes$image_number
+#' )
+#' # prepare data for FDA
+#' dat <- prepData(metricRes, "r", "rs")
+#'
+#' # drop rows with NA
+#' dat <- dat |> drop_na()
+#' # create meta info of the IDs
+#' splitData <- str_split(dat$ID, "x")
+#' dat$condition <- factor(sapply(splitData, function(x) x[1]))
+#' dat$patient_id <- factor(sapply(splitData, function(x) x[2]))
+#' dat$image_id <- factor(sapply(splitData, function(x) x[3]))
+#' # calculate fPCA
+#' mdl <- functionalPCA(
+#'     data = dat, r = metricRes$r |> unique(),
+#'     knots = 30, pve = 0.99
+#' )
+#' mdl
+print.fpca <- function(x, ...) {
+    cat(paste0("Functional principal components analysis ",
+                 "result from `fpca.face` of `refund` \n"))
+    cat(paste0("class: ", class(x), "\n"))
+    cat(paste0("pve: ", round(x$pve, digits = 4), "\n"))
+    cat(paste0("number of PCs: ", x$npc, "\n"))
+    cat(paste0("eigenvalues:\n"))
+    cat(x$evalues)
 }
