@@ -39,7 +39,7 @@
     continuous = FALSE,
     window = NULL,
     ...) {
-    stopifnot(is(df, 'data.frame'))
+    stopifnot(is(df, "data.frame"))
     pp <- .dfToppp(df, marks = marks, continuous = continuous, window = window)
     if (!continuous) {
         ppSub <- subset(pp, marks %in% selection, drop = TRUE)
@@ -78,9 +78,8 @@
                 )
             }
         )
-    }
     # This handles the case when we do cross functions for the same type
-    else if (spatstat.geom::npoints(ppSub) > 2 &&
+    } else if (spatstat.geom::npoints(ppSub) > 2 &&
         length(unique(selection)) == 1 &&
         length(selection) > 1) {
         metricRes <- tryCatch(

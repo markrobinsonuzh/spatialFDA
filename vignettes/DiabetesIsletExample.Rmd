@@ -135,7 +135,8 @@ A known metric is Ripley's $K$ function or its variance-stabilised transformatio
 ```{r Lfunction}
 metricRes <- calcMetricPerFov(spe, c("alpha", "Tc"),
     subsetby = "image_number", fun = "Lcross", marks = "cell_type",
-    rSeq = seq(0, 50, length.out = 50), by = c("patient_stage", "patient_id", "image_number"),
+    rSeq = seq(0, 50, length.out = 50), by = c("patient_stage", "patient_id",
+                                               "image_number"),
     ncores = 1
 )
 
@@ -145,7 +146,8 @@ metricRes %>% head()
 We can visualise this metric with `plotMetricPerFov` function. Here, we need to specify which border correction we want to plot and what the x-axis is. Both can vary from function to function.
 
 ```{r plotLfunction}
-p <- plotMetricPerFov(metricRes, correction = "border", x = "r", imageId = "image_number", ID = "ID")
+p <- plotMetricPerFov(metricRes, correction = "border", x = "r", 
+                      imageId = "image_number", ID = "ID")
 print(p)
 ```
 
@@ -166,15 +168,16 @@ For spacing metrics we get different border corrections but the calculation stay
 ```{r Gfunction}
 metricRes <- calcMetricPerFov(spe, c("alpha", "Tc"),
     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-    rSeq = seq(0, 50, length.out = 50), by = c("patient_stage", "patient_id", "image_number"),
-    ncores = 1
+    rSeq = seq(0, 50, length.out = 50), 
+    by = c("patient_stage", "patient_id", "image_number"), ncores = 1
 )
 
 metricRes %>% head()
 ```
 
 ```{r plotGfunction}
-p <- plotMetricPerFov(metricRes, correction = "rs", x = "r", imageId = "image_number", ID = "ID")
+p <- plotMetricPerFov(metricRes, correction = "rs", x = "r",
+                      imageId = "image_number", ID = "ID")
 print(p)
 ```
 
@@ -206,23 +209,25 @@ dat$patient_id <- factor(sapply(splitData, function(x) x[2]))
 dat$imageId <- factor(sapply(splitData, function(x) x[3]))
 # create a designmatrix
 condition <- dat$condition
-# relevel the condition - can set explicit contrasts here - default is treamtment
-# control contrast
+# relevel the condition - can set explicit contrasts here
+# - default is treamtment control contrast
 condition <- relevel(condition, "Non-diabetic")
 designmat <- model.matrix(~condition)
 # colnames don't work with the '-' sign
-colnames(designmat) <- c("Intercept", "conditionLong_duration", "conditionOnset")
+colnames(designmat) <- c("Intercept", "conditionLong_duration",
+                         "conditionOnset")
 # fit the model
 mdl <- functionalGam(
     data = dat, x = metricRes$r |> unique(),
     designmat = designmat, weights = dat$weights$npoints,
     formula = formula(Y ~ conditionLong_duration +
         conditionOnset + s(patient_id, bs = "re")),
-    family = 'gaussian'
+    family = "gaussian"
 )
 summary(mdl)
 
-plotLs <- lapply(colnames(designmat), plotMdl, mdl = mdl, shift = mdl$coefficients[["(Intercept)"]])
+plotLs <- lapply(colnames(designmat), plotMdl, mdl = mdl,
+                 shift = mdl$coefficients[["(Intercept)"]])
 wrap_plots(plotLs, nrow = 3)
 ```
 
@@ -240,7 +245,8 @@ Another analysis that can be performed is functional principal componentent anal
 
 ```{r fPCA}
 # calculate the fPCA
-pca <- functionalPCA(dat = dat, r = metricRes$r |> unique(), knots = 30, pve = 0.99)
+pca <- functionalPCA(dat = dat, r = metricRes$r |> unique(), 
+                     knots = 30, pve = 0.99)
 # plot the biplot of the first two PCs
 plotFpca(dat = dat, res = pca, colourby = "condition")
 ```

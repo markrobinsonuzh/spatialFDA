@@ -1,9 +1,9 @@
 #' General additive model with functional response
 #'
 #' A function that takes the output of a metric calculation as done by
-#' `calcMetricPerFov`. The data has to be prepared into the correct format for the
-#' functional analysis by the `prepData` function. The output is a `pffr` object
-#' as implemented by `refund`.
+#' `calcMetricPerFov`. The data has to be prepared into the correct format for
+#' the functional analysis by the `prepData` function. The output is a `pffr`
+#' object as implemented by `refund`.
 #'
 #' @param data a dataframe with the following columns: Y = functional response;
 #' sample_id = sample ID; image_id = image ID;
@@ -71,7 +71,7 @@
 #' @import dplyr
 
 functionalGam <- function(data, x, designmat, weights, formula,
-                          family = 'gaussian', ...) {
+                          family = "gaussian", ...) {
     # type checking
     stopifnot(is(data, "data.frame"))
     stopifnot(is(x, "vector"))

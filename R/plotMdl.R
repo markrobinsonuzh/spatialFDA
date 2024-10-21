@@ -65,22 +65,24 @@
 #' @import dplyr
 plotMdl <- function(mdl, predictor, shift = NULL) {
     # type checking
-    stopifnot(is(mdl, 'pffr'))
-    stopifnot(is(predictor, 'character'))
+    stopifnot(is(mdl, "pffr"))
+    stopifnot(is(predictor, "character"))
     # extract the coefficients from the model
     coef <- coef(mdl)
     if (predictor == "Intercept" && !is.null(shift)) {
-        coef$sm[["Intercept(x)"]]$coef$value <- coef$sm[["Intercept(x)"]]$coef$value + shift
+        coef$sm[["Intercept(x)"]]$coef$value <-
+          coef$sm[["Intercept(x)"]]$coef$value + shift
     }
     # get the actual values into a dataframe
     df <- coef$sm[[paste0(predictor, "(x)")]]$coef
     # plot
-    p <- ggplot(df, aes(.data$x.vec, .data$value)) +
+    p <- ggplot(df, aes(.data[[x.vec]], .data[[value]])) +
         geom_line(size = 1) +
         # here, I implement a Wald CI - could be improved
         geom_ribbon(
             data = df,
-            aes(ymin = value - 1.96 * se, ymax = value + 1.96 * se),
+            aes(ymin = .data[[value]] - 1.96 * .data[[se]],
+                ymax = .data[[value]] + 1.96 * .data[[se]]),
             alpha = 0.3
         ) +
         geom_hline(

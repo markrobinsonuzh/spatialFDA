@@ -4,8 +4,8 @@
 #' be converted into the correct format by `prepData`. The output is a list with
 #' the `fpca.face` output from refund.
 #'
-#' @param dat a data object for functional data analysis containing at least the
-#' the functional
+#' @param data a data object for functional data analysis containing at least
+#' the functional response $Y$.
 #' @param r the functional domain
 #' @param knots the number of knots
 #' @param pve the proportion of variance explained
@@ -41,18 +41,18 @@
 #' dat$image_id <- factor(sapply(splitData, function(x) x[3]))
 #' # calculate fPCA
 #' mdl <- functionalPCA(
-#'     dat = dat, r = metricRes$r |> unique(),
+#'     data = dat, r = metricRes$r |> unique(),
 #'     knots = 30, pve = 0.99
 #' )
 #' @import dplyr
-functionalPCA <- function(dat, r, knots, pve = 0.95) {
-    stopifnot(is(dat, 'data.frame'))
-    stopifnot(is(r, 'vector'))
-    stopifnot(is(knots, 'numeric'))
-    stopifnot(is(pve, 'numeric'))
+functionalPCA <- function(data, r, knots, pve = 0.95) {
+    stopifnot(is(data, "data.frame"))
+    stopifnot(is(r, "vector"))
+    stopifnot(is(knots, "numeric"))
+    stopifnot(is(pve, "numeric"))
     # calculate the fPCA - this is a bit a pointless wrapper until now
     res <- refund::fpca.face(
-        Y = dat$Y, center = TRUE, argvals = r,
+        Y = data$Y, center = TRUE, argvals = r,
         knots = knots, pve = pve
     )
     return(res)
@@ -60,11 +60,11 @@ functionalPCA <- function(dat, r, knots, pve = 0.95) {
 
 #' Plot a biplot from an fPCA analysis
 #'
-#' A function that takes the output from the `functionalPCA` function and returns
-#' a `ggplot` object of the first two dimensions of the PCA as biplot.
+#' A function that takes the output from the `functionalPCA` function and
+#' returns a `ggplot` object of the first two dimensions of the PCA as biplot.
 #'
-#' @param dat a data object for functional data analysis containing at least the
-#' the functional
+#' @param data a data object for functional data analysis containing at least
+#' the functional response $Y$.
 #' @param res the output from the fPCA calculation
 #' @param colourby the variable by which to colour the PCA plot by
 #' @param labelby the variable by which to label the PCA plot by
@@ -100,22 +100,22 @@ functionalPCA <- function(dat, r, knots, pve = 0.95) {
 #' dat$image_id <- factor(sapply(splitData, function(x) x[3]))
 #' # calculate fPCA
 #' mdl <- functionalPCA(
-#'     dat = dat, r = metricRes$r |> unique(),
+#'     data = dat, r = metricRes$r |> unique(),
 #'     knots = 30, pve = 0.99
 #' )
 #' p <- plotFpca(
-#'     dat = dat, res = mdl, colourby = "condition",
+#'     data = dat, res = mdl, colourby = "condition",
 #'     labelby = "patient_id"
 #' )
 #' print(p)
 #' @import dplyr
-plotFpca <- function(dat, res, colourby = NULL, labelby = NULL) {
-    stopifnot(is(dat, 'data.frame'))
-    stopifnot(is(res, 'fpca'))
+plotFpca <- function(data, res, colourby = NULL, labelby = NULL) {
+    stopifnot(is(data, "data.frame"))
+    stopifnot(is(res, "fpca"))
     scoresDf <- res$scores %>% as.data.frame()
     # plot fCPA results - assumes same order of fPCA results and input data
     p <- ggplot(scoresDf, aes(scoresDf[, 1], scoresDf[, 2],
-        colour = factor(dat[[colourby]])
+        colour = factor(data[[colourby]])
     )) +
         geom_point() +
         coord_equal() +
@@ -124,7 +124,22 @@ plotFpca <- function(dat, res, colourby = NULL, labelby = NULL) {
         ylab("functional PC2")
     if (!is.null(labelby)) {
         p <- p +
-            geom_text(hjust = 0, vjust = 0, aes(label = factor(dat[[labelby]])))
+            geom_text(hjust = 0, vjust = 0,
+                      aes(label = factor(data[[labelby]])))
     }
     return(p)
+}
+
+#' print the fPCA results
+#'
+#' this is a function that prints a summary of the fPCA result
+#'
+#' @param res the result of function `functionalPCA`
+#'
+#' @return
+#' @export
+#'
+#' @examples
+print.functionalPCA <- function(res) {
+
 }

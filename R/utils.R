@@ -21,7 +21,8 @@
 .dfToppp <- function(df, marks = NULL, continuous = FALSE, window = NULL) {
     #type checking
     stopifnot(is(df, 'data.frame'))
-    # this definition of the window is quite conservative - can be set explicitly
+    # this definition of the window is quite conservative
+    # - can be set explicitly
     pp <- spatstat.geom::as.ppp(data.frame(x = df$x, y = df$y),
         W = spatstat.geom::owin(
             c(

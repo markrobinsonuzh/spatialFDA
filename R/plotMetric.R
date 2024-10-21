@@ -32,9 +32,9 @@
 plotMetricPerFov <- function(metricDf, theo = FALSE, correction = NULL,
     x = NULL, imageId = NULL, ID = NULL) {
     # type checking
-    stopifnot(is(metricDf, 'data.frame'))
-    stopifnot(is(correction, 'character'))
-    stopifnot(is(x, 'character'))
+    stopifnot(is(metricDf, "data.frame"))
+    stopifnot(is(correction, "character"))
+    stopifnot(is(x, "character"))
     p <- ggplot(metricDf, aes(
         x = .data[[x]], y = .data[[correction]],
         group = factor(.data[[imageId]])
@@ -76,7 +76,7 @@ plotMetricPerFov <- function(metricDf, theo = FALSE, correction = NULL,
 #'
 plotCrossFOV <- function(subFov, theo, correction, x, imageId, ID = NULL) {
     # type checking
-    stopifnot(is(subFov, 'data.frame'))
+    stopifnot(is(subFov, "data.frame"))
     #  Apply plot metric function for each combination
     lp <- lapply(unique(subFov$selection), function(sel) {
         plotMetricPerFov(
@@ -131,8 +131,8 @@ plotCrossMetricPerFov <- function(
         imageId = NULL,
         ID = NULL) {
     # type checking
-    stopifnot(is(metricDf, 'data.frame'))
-    stopifnot(is(imageId, 'character'))
+    stopifnot(is(metricDf, "data.frame"))
+    stopifnot(is(imageId, "character"))
     # Find all unique samples
     samples <- metricDf[[imageId]] |> unique()
 

@@ -29,9 +29,9 @@
 #' @import tidyr
 prepData <- function(metricRes, x, y) {
     # type checking
-    stopifnot(is(metricRes, 'data.frame'))
-    stopifnot(is(x, 'character'))
-    stopifnot(is(y, 'character'))
+    stopifnot(is(metricRes, "data.frame"))
+    stopifnot(is(x, "character"))
+    stopifnot(is(y, "character"))
     # extract the functional response matrix
     mat <- metricRes %>%
         select(ID, x, y) %>%
