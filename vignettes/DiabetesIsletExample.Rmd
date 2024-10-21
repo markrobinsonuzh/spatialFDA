@@ -43,6 +43,14 @@ The package consists thus from two main steps.
 
 The use case is a dataset from the `r BiocStyle::Biocpkg('imcdatasets')` package. The dataset contains images from 12 human donors [@damondMapHumanType2019]. 
 
+This package is similar to other packages in `python` and `R`. The following table shows the main differences in terms of functionality
+
+|Package name                          | Foundation | Testing procedure   |
+| ------------------------------------ | --------------- | ------------------- |
+| `r BiocStyle::Biocpkg('spicyR')`     | $L$-function    | Scalar comparison   |
+| `GraphCompass`                       | Graph-based     | Graph and  scalar comparison | 
+| `r BiocStyle::Biocpkg('spatialFDA')` | most `r BiocStyle::CRANpkg('spatstat')` functions   | Functional comparison over domain |
+
 # Installation
 
 `r BiocStyle::Biocpkg('spatialFDA')` can be installed and loaded from Bioconductor as follows
