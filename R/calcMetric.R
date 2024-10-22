@@ -40,7 +40,9 @@
     continuous = FALSE,
     window = NULL,
     ...) {
+    # type checking
     stopifnot(is(df, "data.frame"))
+
     pp <- .dfToppp(df, marks = marks, continuous = continuous, window = window)
     if (!continuous) {
         ppSub <- subset(pp, marks %in% selection, drop = TRUE)
@@ -72,11 +74,7 @@
             },
             error = function(e) {
                 print(e)
-                metricRes <- data.frame(
-                    r = rSeq,
-                    fun = fun,
-                    row.names = seq_along(rSeq)
-                )
+                stop()
             }
         )
     # This handles the case when we do cross functions for the same type
@@ -107,11 +105,7 @@
             },
             error = function(e) {
                 print(e)
-                metricRes <- data.frame(
-                    r = rSeq,
-                    fun = fun,
-                    row.names = seq_along(rSeq)
-                )
+                stop()
             }
         )
     } else {

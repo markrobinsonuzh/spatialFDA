@@ -55,6 +55,18 @@ test_that("Function fails if marks not in ColData", {
   ))
 })
 
+test_that("Function fails if fun not in spatstat.explore", {
+  expect_error(calcMetricPerFov(spe, c("alpha", "beta"),
+                                subsetby = "image_number", fun = "Mcross",
+                                marks = "cell_type",
+                                rSeq = rSeq, by = c(
+                                  "patient_stage", "patient_id",
+                                  "image_number"
+                                ),
+                                ncores = 1
+  ))
+})
+
 # Test function calcCrossMetricPerFov
 test_that("Cross function output has correct dimensions", {
   selection <- c("alpha", "beta", "delta")
