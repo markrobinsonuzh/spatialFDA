@@ -81,10 +81,17 @@ functionalGam <- function(data, x, designmat, weights, formula,
     stopifnot(is(family, "character"))
 
     data <- cbind(data, designmat)
-    # TODO how to make weighting optional?
+    # Test that length of number of points and nrow of designmat correspond
+    stopifnot(length(weights) == nrow(designmat))
     # normalise the weights
     weights <- weights / mean(weights)
-    # TODO write a test that the colnames of the designmat correspond to formula
+    # Test that the colnames of the designmat correspond to formula
+    # with the exception of the intercept as this is inferred - there are
+    # functional and constant intercepts
+    # deselect "Intercept"
+    colNames <- colnames(designmat)[ !colnames(designmat) == "Intercept"]
+    # stop if the rest terms of design mat are not in the formula
+    stopifnot(colNames %in% attr(terms(formula), "term.labels"))
     mdl <- refund::pffr(formula,
         yind = x,
         data = data,
