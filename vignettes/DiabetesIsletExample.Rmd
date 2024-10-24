@@ -43,7 +43,7 @@ The package consists thus from two main steps.
 
 The use case is a dataset from the `r BiocStyle::Biocpkg('imcdatasets')` package. The dataset contains images from 12 human donors [@damondMapHumanType2019]. 
 
-This package is similar to other packages in `python` and `R`. The following table shows the main differences in terms of functionality
+This package is similar to other packages in `python` and `R`. The following table shows the main differences in terms of functionality [@ali2024graphcompass; @canete2022spicyr]. 
 
 |Package name                          | Foundation | Testing procedure   |
 | ------------------------------------ | --------------- | ------------------- |
@@ -55,14 +55,14 @@ This package is similar to other packages in `python` and `R`. The following tab
 
 `r BiocStyle::Biocpkg('spatialFDA')` can be installed and loaded from Bioconductor as follows
 
-```{r installation, include = TRUE, eval=FALSE}
+```{r installation, include = TRUE, eval = FALSE}
 if (!requireNamespace("BiocManager")) {
     install.packages("BiocManager")
 }
 BiocManager::install("spatialFDA")
 ```
 
-```{r setup}
+```{r setup, warning = FALSE, message = FALSE}
 library("spatialFDA")
 library("dplyr")
 library("ggplot2")
@@ -80,18 +80,17 @@ In this vignette we will analyse a diabetes dataset acquired by imaging mass cyt
 
 The Damond et al. [@damondMapHumanType2019] dataset is easily loaded via the `r BiocStyle::Biocpkg('imcdatasets')` package. For computational reasons we will work with a reduced dataset for three patients. The entire dataset can be loaded by setting `full_dataset = TRUE`.  The package offers multiple datatypes, we will use the `r BiocStyle::Biocpkg('SpatialExperiment')` (SPE) object.
 
-```{r loading}
+```{r loading, warning = FALSE, message = FALSE}
 # load the dataset as SpatialExperiment object
 spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = TRUE)
 spe
-``` 
-
+```
 
 ## Visualising the raw data
 
 We can look at the fields of view of the diabetes dataset. To do so we extract the spatial coordinates, store them as a dataframe and add the colData from the SPE to this. Finally due to overplotting, we will look only secretory cells ($\alpha, \beta$ and $\delta$ cells) and T-cells (CD8+ and CD4+ T-cells) for the first four fovs of the healthy sample.
 
-```{r plotting fovs}
+```{r plotting fovs, warning = FALSE}
 df <- as.data.frame(spatialCoords(spe))
 
 df <- cbind(df, colData(spe))
@@ -140,7 +139,7 @@ A known metric is Ripley's $K$ function or its variance-stabilised transformatio
 - `border`: an edge corrected value of the $L$ function
 
 
-```{r Lfunction}
+```{r Lfunction, warning = FALSE}
 metricRes <- calcMetricPerFov(spe, c("alpha", "Tc"),
     subsetby = "image_number", fun = "Lcross", marks = "cell_type",
     rSeq = seq(0, 50, length.out = 50), by = c("patient_stage", "patient_id",
@@ -153,8 +152,8 @@ metricRes %>% head()
 
 We can visualise this metric with `plotMetricPerFov` function. Here, we need to specify which border correction we want to plot and what the x-axis is. Both can vary from function to function.
 
-```{r plotLfunction}
-p <- plotMetricPerFov(metricRes, correction = "border", x = "r", 
+```{r plotLfunction, warning = FALSE}
+p <- plotMetricPerFov(metricRes, correction = "border", x = "r",
                       imageId = "image_number", ID = "ID")
 print(p)
 ```
@@ -173,17 +172,17 @@ Another important aspect of spatial analysis is spacing. Here, the shortest dist
 
 For spacing metrics we get different border corrections but the calculation stays the same:
 
-```{r Gfunction}
+```{r Gfunction, warning = FALSE}
 metricRes <- calcMetricPerFov(spe, c("alpha", "Tc"),
     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-    rSeq = seq(0, 50, length.out = 50), 
+    rSeq = seq(0, 50, length.out = 50),
     by = c("patient_stage", "patient_id", "image_number"), ncores = 1
 )
 
 metricRes %>% head()
 ```
 
-```{r plotGfunction}
+```{r plotGfunction, warning = FALSE}
 p <- plotMetricPerFov(metricRes, correction = "rs", x = "r",
                       imageId = "image_number", ID = "ID")
 print(p)
@@ -197,7 +196,9 @@ The $L$ function above showed no clear difference between the three conditions w
 
 In this context we need to specify a design matrix and contrasts. 
 
-```{r funcGamG, fig.height=10}
+```{r funcGamG, fig.height=10, warning = FALSE}
+# filter out all rows that have a constant zero part - all r<5
+metricRes <- metricRes %>% filter(r > 10)
 # create a unique ID for each row
 metricRes$ID <- paste0(
     metricRes$patient_stage, "x", metricRes$patient_id,
@@ -241,19 +242,23 @@ wrap_plots(plotLs, nrow = 3)
 
 We note that there is no difference in the $G$ function between non-diabetic and long duration T1D samples but a strong difference between non-diabetic and onset T1D. This difference is significant after $\sim 30 µm$ and increases at longer distances. Therefore, we don't only see that a spatial difference colocalisation of $\alpha$ and cytotoxic T cells is statistically significant but also at which spatial scale this difference occurs.
 
-One open problem at the moment is the implementation of confidence bands that reflect the non-independently and non-identically distributed residuals. To visualise how much of a problem this is, we can plot the contours of the correlation/covariance. We can model the confidence using a gaussian location-scale model if the errors are heteroskedastic [@wood2016Smoothing]. 
+One open problem is the implementation of confidence bands that reflect the non-independently and non-identically distributed residuals. To visualise how much of a problem this is, we can plot the contours of the correlation/covariance and look at some model diagnostics. We can model the confidence using a gaussian location-scale model if the errors are heteroskedastic [@wood2016Smoothing]. If does not result in a good model fit, we have to implement bootstrapping of confidence bands.
 
-```{r contour}
+```{r contour, warning = FALSE}
 resid(mdl) |> cov() |> filled.contour()
+# TODO atm some of the plots fail - potentially due to NA in mdl output
+try(refund::pffr.check(mdl))
 ```
+
+In these model diagnostics we note that there is still significant variability in the residuals that is not considered by the model. In this case we should resort to bootstrapping to obtain better confidence bands for the inference.
 
 # Functional principal component analysis
 
 Another analysis that can be performed is functional principal componentent analysis (fPCA). This is a method to capture the main modes of variation in functional data [@ramsayPrincipalComponentsAnalysis2005]. We use the `r BiocStyle::CRANpkg('refund')` implementation of fPCA. 
 
-```{r fPCA}
+```{r fPCA, warning = FALSE}
 # calculate the fPCA
-pca <- functionalPCA(dat = dat, r = metricRes$r |> unique(), 
+pca <- functionalPCA(dat = dat, r = metricRes$r |> unique(),
                      knots = 30, pve = 0.99)
 # plot the biplot of the first two PCs
 plotFpca(dat = dat, res = pca, colourby = "condition")
