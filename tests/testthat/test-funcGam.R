@@ -60,7 +60,7 @@ test_that("Fails if designmat and formula arguments don't correspond", {
 })
 
 test_that("Can handle missingnis in response - still pffr object", {
-  dat[1,2][9] <- NA
+  dat[1, 2][9] <- NA
   mdl <- functionalGam(
     data = dat, x = metricRes$r |> unique(),
     designmat = designmat, weights = dat$weights$npoints,
@@ -83,5 +83,3 @@ test_that("Should fail if weights contain NA", {
                         conditionOnset + s(patient_id, bs = "re"))
   ))
 })
-
-

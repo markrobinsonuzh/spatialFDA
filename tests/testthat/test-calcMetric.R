@@ -11,18 +11,18 @@ test_that("Output contains correction for discrete single mark", {
                                 rSeq = rSeq, by = c(
                                   "patient_stage", "patient_id",
                                   "image_number"),
-                                correction = 'rs',
+                                correction = "rs",
                                 ncores = 1
   )
-  expect_contains(colnames(metricRes), 'rs')
-  expect_contains(colnames(metricRes), 'r')
-  expect_contains(colnames(metricRes), 'theo')
+  expect_contains(colnames(metricRes), "rs")
+  expect_contains(colnames(metricRes), "r")
+  expect_contains(colnames(metricRes), "theo")
 })
 
 test_that("Output contains correction for continuous single mark", {
   # add continuous mark to colData
   protein <- "CD31"
-  expr <- assay(spe, 'exprs')[protein,] %>%
+  expr <- assay(spe, "exprs")[protein, ] %>%
     as.matrix() %>%
     data.frame() %>%
     rename("CD31" = ".")
@@ -35,13 +35,13 @@ test_that("Output contains correction for continuous single mark", {
                                 rSeq = rSeq, by = c(
                                   "patient_stage", "patient_id",
                                   "image_number"),
-                                correction = 'iso',
+                                correction = "iso",
                                 ncores = 1,
                                 continuous = TRUE
   )
-  expect_contains(colnames(metricRes), 'iso')
-  expect_contains(colnames(metricRes), 'r')
-  expect_contains(colnames(metricRes), 'theo')
+  expect_contains(colnames(metricRes), "iso")
+  expect_contains(colnames(metricRes), "r")
+  expect_contains(colnames(metricRes), "theo")
 })
 
 test_that("Output contains correction for two marks", {
@@ -51,12 +51,12 @@ test_that("Output contains correction for two marks", {
                                 rSeq = rSeq, by = c(
                                   "patient_stage", "patient_id",
                                   "image_number"),
-                                correction = 'rs',
+                                correction = "rs",
                                 ncores = 1
   )
-  expect_contains(colnames(metricRes), 'rs')
-  expect_contains(colnames(metricRes), 'r')
-  expect_contains(colnames(metricRes), 'theo')
+  expect_contains(colnames(metricRes), "rs")
+  expect_contains(colnames(metricRes), "r")
+  expect_contains(colnames(metricRes), "theo")
 })
 
 test_that("Output has correct dimensions", {
@@ -66,10 +66,10 @@ test_that("Output has correct dimensions", {
                                 rSeq = rSeq, by = c(
                                   "patient_stage", "patient_id",
                                   "image_number"),
-                                correction = 'rs',
+                                correction = "rs",
                                 ncores = 1
   )
-  expect_length(metricRes$rs, length(rSeq)*length(unique(spe$image_name)))
+  expect_length(metricRes$rs, length(rSeq) * length(unique(spe$image_name)))
 })
 
 test_that("Function fails if marks not in ColData", {
@@ -109,8 +109,8 @@ test_that("Cross function output has correct dimensions", {
                                      ncores = 1
   )
   expect_length(metricRes$rs,
-                length(rSeq)*length(unique(spe$image_name))
-                *(length(selection)^2))
+                length(rSeq) * length(unique(spe$image_name))
+                * (length(selection)^2))
 })
 
 test_that("Cross function output has correct dimensions for Kdot", {
@@ -126,6 +126,6 @@ test_that("Cross function output has correct dimensions for Kdot", {
                                      ncores = 1
   )
   expect_length(metricRes$border,
-                length(rSeq)*length(unique(spe$image_name))
+                length(rSeq) * length(unique(spe$image_name))
                 * (length(selection)))
 })

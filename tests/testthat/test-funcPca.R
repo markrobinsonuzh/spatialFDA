@@ -41,7 +41,7 @@ test_that("Correct output type", {
 })
 
 test_that("Can handle NA in response", {
-  dat[1,2][9] <- NA
+  dat[1, 2][9] <- NA
   mdl <- functionalPCA(
     data = dat, r = metricRes$r |> unique(),
     knots = 30, pve = 0.99
@@ -55,4 +55,3 @@ test_that("Can handle NA in response", {
   expect_true(!is.null(mdl$npc))
   expect_true(!is.null(mdl$pve))
 })
-
