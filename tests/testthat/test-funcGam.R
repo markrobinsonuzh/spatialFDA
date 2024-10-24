@@ -44,6 +44,10 @@ mdl <- functionalGam(
 
 test_that("Output is of correct type", {
   expect_equal(is(mdl), "pffr")
+  expect_true(!is.null(mdl$coefficients))
+  expect_true(!is.null(mdl$residuals))
+  expect_true(!is.null(mdl$weights))
+  expect_true(!is.null(mdl$fitted.values))
 })
 
 test_that("Fails if designmat and formula arguments don't correspond", {
@@ -64,6 +68,10 @@ test_that("Can handle missingnis in response - still pffr object", {
                         conditionOnset + s(patient_id, bs = "re"))
   )
   expect_equal(is(mdl), "pffr")
+  expect_true(!is.null(mdl$coefficients))
+  expect_true(!is.null(mdl$residuals))
+  expect_true(!is.null(mdl$weights))
+  expect_true(!is.null(mdl$fitted.values))
 })
 
 test_that("Should fail if weights contain NA", {
