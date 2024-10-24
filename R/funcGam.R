@@ -70,6 +70,7 @@
 
 #' @import dplyr
 #' @importFrom methods is
+#' @importFrom stats terms
 functionalGam <- function(data, x, designmat, weights, formula,
                           family = "gaussian", ...) {
     # type checking

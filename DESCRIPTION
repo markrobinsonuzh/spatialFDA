@@ -30,7 +30,8 @@ Imports:
     spatstat.geom,
     SummarizedExperiment,
     tidyr,
-    methods
+    methods,
+    stats
 biocViews: Software, Spatial, Transcriptomics
 VignetteBuilder: knitr
 Suggests: 

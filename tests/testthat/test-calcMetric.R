@@ -3,7 +3,7 @@ spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
 rSeq <- seq(0, 50, length.out = 50)
 
 ## test function calcMetricPerFov
-test_that("Output contains correction for single mark", {
+test_that("Output contains correction for discrete single mark", {
   rSeq <- seq(0, 50, length.out = 50)
   metricRes <- calcMetricPerFov(spe, "alpha",
                                 subsetby = "image_number", fun = "Gest",
@@ -15,6 +15,33 @@ test_that("Output contains correction for single mark", {
                                 ncores = 1
   )
   expect_contains(colnames(metricRes), 'rs')
+  expect_contains(colnames(metricRes), 'r')
+  expect_contains(colnames(metricRes), 'theo')
+})
+
+test_that("Output contains correction for continuous single mark", {
+  # add continuous mark to colData
+  protein <- "CD31"
+  expr <- assay(spe, 'exprs')[protein,] %>%
+    as.matrix() %>%
+    data.frame() %>%
+    rename("CD31" = ".")
+  colData(spe) <- colData(spe) %>% cbind(expr)
+
+  rSeq <- seq(0, 50, length.out = 50)
+  metricRes <- calcMetricPerFov(spe, "alpha",
+                                subsetby = "image_number", fun = "markcorr",
+                                marks = protein,
+                                rSeq = rSeq, by = c(
+                                  "patient_stage", "patient_id",
+                                  "image_number"),
+                                correction = 'iso',
+                                ncores = 1,
+                                continuous = TRUE
+  )
+  expect_contains(colnames(metricRes), 'iso')
+  expect_contains(colnames(metricRes), 'r')
+  expect_contains(colnames(metricRes), 'theo')
 })
 
 test_that("Output contains correction for two marks", {
@@ -28,6 +55,8 @@ test_that("Output contains correction for two marks", {
                                 ncores = 1
   )
   expect_contains(colnames(metricRes), 'rs')
+  expect_contains(colnames(metricRes), 'r')
+  expect_contains(colnames(metricRes), 'theo')
 })
 
 test_that("Output has correct dimensions", {
