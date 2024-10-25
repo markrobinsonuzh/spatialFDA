@@ -35,16 +35,16 @@ prepData <- function(metricRes, x, y) {
     stopifnot(is(y, "character"))
     # extract the functional response matrix
     mat <- metricRes %>%
-        select(ID, x, y) %>%
-        spread(ID, y) %>%
+        select("ID", x, y) %>%
+        spread("ID", y) %>%
         select(!x)
     # extract the number of points as weights - are ordered differently,
     # thus order according to image ID
     weights <- metricRes %>%
-        group_by(ID) %>%
-        select(ID, npoints) %>%
+        group_by("ID") %>%
+        select("ID", "npoints") %>%
         unique() %>%
-        arrange(ID)
+        arrange("ID")
     # create a dataframe as required by pffr
     dat <- data.frame(ID = colnames(mat))
     dat$Y <- t(mat)
