@@ -31,7 +31,9 @@ Imports:
     SummarizedExperiment,
     tidyr,
     methods,
-    stats
+    stats,
+    fda,
+    graphics
 biocViews: Software, Spatial, Transcriptomics
 VignetteBuilder: knitr
 Suggests: 
