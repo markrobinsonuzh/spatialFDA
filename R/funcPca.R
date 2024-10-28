@@ -42,7 +42,7 @@
 #' # calculate fPCA
 #' mdl <- functionalPCA(
 #'     data = dat, r = metricRes$r |> unique(),
-#'     knots = 30, pve = 0.99
+#'     knots = 35, pve = 0.99
 #' )
 #' @import dplyr
 #' @importFrom methods is
