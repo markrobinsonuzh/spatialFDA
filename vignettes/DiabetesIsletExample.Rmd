@@ -14,7 +14,8 @@ package: "`r BiocStyle::Biocpkg('spatialFDA')`"
 output:
   BiocStyle::html_document
 abstract: >
-  A package to calculate spatial statistics metrics and compare them with 
+  A package to calculate spatial statistics metrics, explore them with
+  functional principal component analysis adn compare them with 
   functional additive mixed models
 vignette: >
   %\VignetteIndexEntry{Functional Data Analysis of Spatial Metrics}
@@ -35,9 +36,9 @@ knitr::opts_chunk$set(
 
 This vignette demonstrates how to use `r BiocStyle::Biocpkg('spatialFDA')` to perform functional data analysis on spatial statistics metrics. The main aim of this package is to detect differential spatial arrangements within and between celltypes given several samples/conditions. It does so by calculating spatial statistics metrics via the `r BiocStyle::CRANpkg('spatstat')` package and comparing for differences using functional additive mixed models as implemented in the `r BiocStyle::CRANpkg('refund')` package [@spatstat2005; @refund2024].
 
-The package consists thus from two main steps.
+The package consists thus of two main steps.
 
-- calculating spatial statistics within or between discrete/continuous marks via `r BiocStyle::CRANpkg('spatstat')`.
+- calculating spatial statistics metrics within or between discrete/continuous marks via `r BiocStyle::CRANpkg('spatstat')`.
 
 - comparing these curves across conditions using functional additive mixed models as implemented in `r BiocStyle::CRANpkg('refund')`.
 
@@ -123,7 +124,7 @@ In a first step, we calculate a spatial statistic curve as implemented by `r Bio
 
 - Empty space function $F$
 
-All of these function have different implementations to correct for inhomogeneity and for comparison between two marks (cross functions) [@baddeleySpatialPointPatterns]. 
+All of these functions have different implementations to correct for inhomogeneity and for comparison between two marks (cross functions) [@baddeleySpatialPointPatterns]. 
 
 
 ## Correlation
@@ -140,7 +141,7 @@ A known metric is Ripley's $K$ function or its variance-stabilised transformatio
 
 
 ```{r Lfunction, warning = FALSE}
-metricRes <- calcMetricPerFov(spe, c("alpha", "Tc"),
+metricRes <- calcMetricPerFov(spe = spe, selection = c("alpha", "Tc"),
     subsetby = "image_number", fun = "Lcross", marks = "cell_type",
     rSeq = seq(0, 50, length.out = 50), by = c("patient_stage", "patient_id",
                                                "image_number"),
@@ -158,11 +159,12 @@ p <- plotMetricPerFov(metricRes, correction = "border", x = "r",
 print(p)
 ```
 
-by eye we see now big difference between the conditions in terms of correlation.
+by eye we see no big difference between the conditions in terms of correlation 
+of $\alpha$ and cytotoxic T cells.
 
 ## Spacing
 
-Another important aspect of spatial analysis is spacing. Here, the shortest distances or empty space to the next neighbor is calculated. This gives a different aspect of a point pattern than correlation or intensity of points. Two very well known concepts are:
+Another important aspect of spatial analysis is spacing. Here, the shortest distances or empty space to the next neighbor is calculated. This quantifies a different aspect of a point pattern than correlation or intensity of points. Two very well known functions are:
 
 - nearest-neighbor distance distribution $G$
 
@@ -173,7 +175,7 @@ Another important aspect of spatial analysis is spacing. Here, the shortest dist
 For spacing metrics we get different border corrections but the calculation stays the same:
 
 ```{r Gfunction, warning = FALSE}
-metricRes <- calcMetricPerFov(spe, c("alpha", "Tc"),
+metricRes <- calcMetricPerFov(spe = spe, selection = c("alpha", "Tc"),
     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
     rSeq = seq(0, 50, length.out = 50),
     by = c("patient_stage", "patient_id", "image_number"), ncores = 1
@@ -188,7 +190,7 @@ p <- plotMetricPerFov(metricRes, correction = "rs", x = "r",
 print(p)
 ```
 
-In the nearest-neighbor distance function we see a strong difference between long duration T1D, onset T1D and non-diabetic controls. 
+In the nearest-neighbor distance function we see a strong difference between long duration T1D, onset T1D and non-diabetic controls in terms of spacing of $\alpha$ and cytotoxic T cells. 
 
 # Functional additive mixed models
 
