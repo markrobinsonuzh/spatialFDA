@@ -37,7 +37,7 @@ colnames(designmat) <- c(
 # fit the model
 mdl <- functionalGam(
   data = dat, x = metricRes$r |> unique(),
-  designmat = designmat, weights = dat$weights$npoints,
+  designmat = designmat, weights = dat$npoints,
   formula = formula(Y ~ conditionLong_duration +
                       conditionOnset + s(patient_id, bs = "re"))
 )
@@ -53,7 +53,7 @@ test_that("Output is of correct type", {
 test_that("Fails if designmat and formula arguments don't correspond", {
   expect_error(functionalGam(
     data = dat, x = metricRes$r |> unique(),
-    designmat = designmat, weights = dat$weights$npoints,
+    designmat = designmat, weights = dat$npoints,
     formula = formula(Y ~ conditionLong_duration_diabetes +
                         conditionOnset_diabetes + s(patient_id, bs = "re"))
   ))
@@ -63,7 +63,7 @@ test_that("Can handle missingnis in response - still pffr object", {
   dat[1, 2][9] <- NA
   mdl <- functionalGam(
     data = dat, x = metricRes$r |> unique(),
-    designmat = designmat, weights = dat$weights$npoints,
+    designmat = designmat, weights = dat$npoints,
     formula = formula(Y ~ conditionLong_duration +
                         conditionOnset + s(patient_id, bs = "re"))
   )
@@ -75,10 +75,10 @@ test_that("Can handle missingnis in response - still pffr object", {
 })
 
 test_that("Should fail if weights contain NA", {
-  dat$weights$npoints[1] <- NA
+  dat$npoints[1] <- NA
   expect_error(functionalGam(
     data = dat, x = metricRes$r |> unique(),
-    designmat = designmat, weights = dat$weights$npoints,
+    designmat = designmat, weights = dat$npoints,
     formula = formula(Y ~ conditionLong_duration +
                         conditionOnset + s(patient_id, bs = "re"))
   ))

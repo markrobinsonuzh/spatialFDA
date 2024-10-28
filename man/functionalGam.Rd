@@ -76,7 +76,7 @@ colnames(designmat) <- c(
 # fit the model
 mdl <- functionalGam(
     data = dat, x = metricRes$r |> unique(),
-    designmat = designmat, weights = dat$weights$npoints,
+    designmat = designmat, weights = dat$npoints,
     formula = formula(Y ~ conditionLong_duration +
         conditionOnset + s(patient_id, bs = "re"))
 )

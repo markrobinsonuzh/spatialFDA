@@ -38,16 +38,23 @@ prepData <- function(metricRes, x, y) {
         select("ID", x, y) %>%
         spread("ID", y) %>%
         select(!x)
-    # extract the number of points as weights - are ordered differently,
-    # thus order according to image ID
-    weights <- metricRes %>%
-        group_by("ID") %>%
-        select("ID", "npoints") %>%
-        unique() %>%
-        arrange("ID")
     # create a dataframe as required by pffr
+    # the colnames of the matrix are the new row IDs
     dat <- data.frame(ID = colnames(mat))
+    # transpose of the matrix to have the entire response in one row
     dat$Y <- t(mat)
-    dat$weights <- weights
+    # extract the number of points as weights
+    weights <- metricRes %>%
+      select("ID", "npoints") %>%
+      unique()
+    # add the weights to the data.frame
+    dat <- dat %>% left_join(weights, by = "ID")
+    # extract the coordinates
+    coords <- metricRes %>%
+        select("ID", "centroidx", "centroidy") %>%
+        unique()
+    # add the coordinates to the data.frame
+    dat <- dat %>% left_join(coords, by = "ID")
+
     return(dat)
 }
