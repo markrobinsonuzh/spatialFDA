@@ -23,5 +23,7 @@ plotCrossFOV(subFov, theo, correction, x, imageId, ID = NULL)
 a ggplot object
 }
 \description{
-Creates a nXn plot of the cross metrics per sample
+Helper function for \code{plotCrossMetricPerFov}. It applies \code{plotMetricPerFov}
+to all \code{n} marks defined in the variable \code{selection}. This gives an
+\code{nxn} plot of all marks.
 }

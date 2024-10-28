@@ -14,7 +14,7 @@ plotCrossMetricPerFov(
 )
 }
 \arguments{
-\item{metricDf}{the metric dataframe as calculated by calcMetricPerFov}
+\item{metricDf}{the metric dataframe as calculated by \code{calcMetricPerFov}}
 
 \item{theo}{logical; if the theoretical line should be plotted}
 
@@ -30,7 +30,9 @@ plotCrossMetricPerFov(
 a ggplot object
 }
 \description{
-Plot a cross type spatial metric per field of view
+This function plots the cross function between two marks output from
+\code{calcMetricPerFov}. It wraps around helper function and applies this
+function to all samples.
 }
 \examples{
 spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
