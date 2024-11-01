@@ -24,8 +24,7 @@ dat$patient_id <- factor(sapply(splitData, function(x) x[2]))
 dat$image_id <- factor(sapply(splitData, function(x) x[3]))
 # calculate fPCA
 mdl <- functionalPCA(
-  data = dat, r = metricRes$r |> unique(),
-  knots = 30, pve = 0.99
+  data = dat, r = metricRes$r |> unique()
 )
 
 test_that("Correct output type", {
@@ -43,8 +42,7 @@ test_that("Correct output type", {
 test_that("Can handle NA in response", {
   dat[1, 2][9] <- NA
   mdl <- functionalPCA(
-    data = dat, r = metricRes$r |> unique(),
-    knots = 30, pve = 0.99
+    data = dat, r = metricRes$r |> unique()
   )
   expect_equal(is(mdl), "fpca")
   # contains the required output

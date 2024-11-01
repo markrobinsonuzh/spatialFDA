@@ -7,8 +7,6 @@
 #' @param data a data object for functional data analysis containing at least
 #' the functional response $Y$.
 #' @param r the functional domain
-#' @param knots the number of knots
-#' @param pve the proportion of variance explained
 #'
 #' @return a list with components of fpca.face
 #' @export
@@ -41,20 +39,16 @@
 #' dat$image_id <- factor(sapply(splitData, function(x) x[3]))
 #' # calculate fPCA
 #' mdl <- functionalPCA(
-#'     data = dat, r = metricRes$r |> unique(),
-#'     knots = 35, pve = 0.99
+#'     data = dat, r = metricRes$r |> unique()
 #' )
 #' @import dplyr
 #' @importFrom methods is
-functionalPCA <- function(data, r, knots, pve = 0.95) {
+functionalPCA <- function(data, r) {
     stopifnot(is(data, "data.frame"))
     stopifnot(is(r, "vector"))
-    stopifnot(is(knots, "numeric"))
-    stopifnot(is(pve, "numeric"))
     # calculate the fPCA - this is a bit a pointless wrapper until now
-    res <- refund::fpca.face(
-        Y = data$Y, center = TRUE, argvals = r,
-        knots = knots, pve = pve
+    res <- refund::fpca.sc(
+        Y = data$Y, center = TRUE, argvals = r
     )
     return(res)
 }
@@ -101,8 +95,7 @@ functionalPCA <- function(data, r, knots, pve = 0.95) {
 #' dat$image_id <- factor(sapply(splitData, function(x) x[3]))
 #' # calculate fPCA
 #' mdl <- functionalPCA(
-#'     data = dat, r = metricRes$r |> unique(),
-#'     knots = 30, pve = 0.99
+#'     data = dat, r = metricRes$r |> unique()
 #' )
 #' p <- plotFpca(
 #'     data = dat, res = mdl, colourby = "condition",
@@ -170,8 +163,7 @@ plotFpca <- function(data, res, colourby = NULL, labelby = NULL) {
 #' dat$image_id <- factor(sapply(splitData, function(x) x[3]))
 #' # calculate fPCA
 #' mdl <- functionalPCA(
-#'     data = dat, r = metricRes$r |> unique(),
-#'     knots = 30, pve = 0.99
+#'     data = dat, r = metricRes$r |> unique()
 #' )
 #' mdl
 print.fpca <- function(x, ...) {
