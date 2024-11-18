@@ -4,10 +4,10 @@
 \alias{plotCrossFOV}
 \title{Creates a nXn plot of the cross metrics per sample}
 \usage{
-plotCrossFOV(sub_fov, theo, correction, x, image_id, ID = NULL)
+plotCrossFOV(subFov, theo, correction, x, imageId, ID = NULL)
 }
 \arguments{
-\item{sub_fov}{a subset of the dataframe to the respective fov}
+\item{subFov}{a subset of the \code{dataframe} to the respective fov}
 
 \item{theo}{logical; if the theoretical line should be plotted}
 
@@ -15,7 +15,7 @@ plotCrossFOV(sub_fov, theo, correction, x, image_id, ID = NULL)
 
 \item{x}{the x-axis variable to plot}
 
-\item{image_id}{the ID of the image/fov}
+\item{imageId}{the ID of the image/fov}
 
 \item{ID}{the (optional) ID for plotting combinations}
 }
@@ -23,5 +23,7 @@ plotCrossFOV(sub_fov, theo, correction, x, image_id, ID = NULL)
 a ggplot object
 }
 \description{
-Creates a nXn plot of the cross metrics per sample
+Helper function for \code{plotCrossMetricPerFov}. It applies \code{plotMetricPerFov}
+to all \code{n} marks defined in the variable \code{selection}. This gives an
+\code{nxn} plot of all marks.
 }

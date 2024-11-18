@@ -1,6 +1,12 @@
 #' Plot a pffr model object
 #'
-#' @param mdl a pffr model object
+#' A function that takes a pffr object as calculated in `functionalGam` and
+#' plots the functional coefficients. The functions are centered such that their
+#' expected value is zero. Therefore, the scalar intercept has to be added to
+#' the output with the argument `shift` in order to plot the coefficients in
+#' their original range.
+#'
+#' @param mdl a `pffr` model object
 #' @param predictor predictor to plot
 #' @param shift the value by which to shift the centered functional intercept.
 #' this will most often be the constant intercept
@@ -13,27 +19,27 @@
 #' library("stringr")
 #' library("dplyr")
 #' spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-#' metric_res <- calcMetricPerFov(spe, c("alpha", "beta"),
+#' metricRes <- calcMetricPerFov(spe, c("alpha", "beta"),
 #'     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-#'     r_seq = seq(0, 50, length.out = 50), by = c(
+#'     rSeq = seq(0, 50, length.out = 50), by = c(
 #'         "patient_stage", "patient_id",
 #'         "image_number"
 #'     ),
 #'     ncores = 1
 #' )
 #' # create a unique ID for each row
-#' metric_res$ID <- paste0(
-#'     metric_res$patient_stage, "x", metric_res$patient_id,
-#'     "x", metric_res$image_number
+#' metricRes$ID <- paste0(
+#'     metricRes$patient_stage, "x", metricRes$patient_id,
+#'     "x", metricRes$image_number
 #' )
 #'
-#' dat <- prepData(metric_res, "r", "rs")
+#' dat <- prepData(metricRes, "r", "rs")
 #'
 #' # create meta info of the IDs
-#' split_data <- str_split(dat$ID, "x")
-#' dat$condition <- factor(sapply(split_data, function(x) x[1]))
-#' dat$patient_id <- factor(sapply(split_data, function(x) x[2]))
-#' dat$image_id <- factor(sapply(split_data, function(x) x[3]))
+#' splitData <- str_split(dat$ID, "x")
+#' dat$condition <- factor(sapply(splitData, function(x) x[1]))
+#' dat$patient_id <- factor(sapply(splitData, function(x) x[2]))
+#' dat$image_id <- factor(sapply(splitData, function(x) x[3]))
 #' # create a designmatrix
 #' condition <- dat$condition
 #' # relevel the condition - can set explicit contrasts here
@@ -46,22 +52,27 @@
 #' )
 #' # fit the model
 #' mdl <- functionalGam(
-#'     dat = dat, x = metric_res$r |> unique(),
-#'     designmat = designmat, weights = dat$weights$npoints,
+#'     data = dat, x = metricRes$r |> unique(),
+#'     designmat = designmat, weights = dat$npoints,
 #'     formula = formula(Y ~ conditionLong_duration +
 #'         conditionOnset + s(patient_id, bs = "re"))
 #' )
 #' summary(mdl)
-#' plot_ls <- lapply(colnames(designmat), plotMdl,
+#' plotLs <- lapply(colnames(designmat), plotMdl,
 #'     mdl = mdl,
 #'     shift = mdl$coefficients[["(Intercept)"]]
 #' )
 #' @import dplyr
+#' @importFrom methods is
 plotMdl <- function(mdl, predictor, shift = NULL) {
+    # type checking
+    stopifnot(is(mdl, "pffr"))
+    stopifnot(is(predictor, "character"))
     # extract the coefficients from the model
     coef <- coef(mdl)
     if (predictor == "Intercept" && !is.null(shift)) {
-        coef$sm[["Intercept(x)"]]$coef$value <- coef$sm[["Intercept(x)"]]$coef$value + shift
+        coef$sm[["Intercept(x)"]]$coef$value <-
+          coef$sm[["Intercept(x)"]]$coef$value + shift
     }
     # get the actual values into a dataframe
     df <- coef$sm[[paste0(predictor, "(x)")]]$coef
@@ -71,7 +82,8 @@ plotMdl <- function(mdl, predictor, shift = NULL) {
         # here, I implement a Wald CI - could be improved
         geom_ribbon(
             data = df,
-            aes(ymin = value - 1.96 * se, ymax = value + 1.96 * se),
+            aes(ymin = .data$value - 1.96 * .data$se,
+                ymax = .data$value + 1.96 * .data$se),
             alpha = 0.3
         ) +
         geom_hline(

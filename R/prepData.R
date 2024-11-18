@@ -1,6 +1,6 @@
 #' Prepare data from calcMetricRes to be in the right format for FDA
 #'
-#' @param metric_res a dataframe as calculated by calcMetricRes - requires
+#' @param metricRes a dataframe as calculated by calcMetricRes - requires
 #' the columns ID (unique identifier of each row)
 #' @param x the name of the x-axis of the spatial metric
 #' @param y the name of the y-axis of the spatial metric
@@ -11,9 +11,9 @@
 #'
 #' @examples
 #' spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-#' metric_res <- calcMetricPerFov(spe, c("alpha", "beta"),
+#' metricRes <- calcMetricPerFov(spe, c("alpha", "beta"),
 #'     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-#'     r_seq = seq(0, 50, length.out = 50), by = c(
+#'     rSeq = seq(0, 50, length.out = 50), by = c(
 #'         "patient_stage", "patient_id",
 #'         "image_number"
 #'     ),
@@ -21,28 +21,40 @@
 #' )
 #'
 #' # create a unique ID for each row
-#' metric_res$ID <- paste0(
-#'     metric_res$patient_stage, "x", metric_res$patient_id,
-#'     "x", metric_res$image_number
+#' metricRes$ID <- paste0(
+#'     metricRes$patient_stage, "x", metricRes$patient_id,
+#'     "x", metricRes$image_number
 #' )
-#' dat <- prepData(metric_res, "r", "rs")
+#' dat <- prepData(metricRes, "r", "rs")
 #' @import tidyr
-prepData <- function(metric_res, x, y) {
+#' @importFrom methods is
+prepData <- function(metricRes, x, y) {
+    # type checking
+    stopifnot(is(metricRes, "data.frame"))
+    stopifnot(is(x, "character"))
+    stopifnot(is(y, "character"))
     # extract the functional response matrix
-    mat <- metric_res %>%
-        select(ID, x, y) %>%
-        spread(ID, y) %>%
+    mat <- metricRes %>%
+        select("ID", x, y) %>%
+        spread("ID", y) %>%
         select(!x)
-    # extract the number of points as weights - are ordered differently,
-    # thus order according to image ID
-    weights <- metric_res %>%
-        group_by(ID) %>%
-        select(ID, npoints) %>%
-        unique() %>%
-        arrange(ID)
     # create a dataframe as required by pffr
+    # the colnames of the matrix are the new row IDs
     dat <- data.frame(ID = colnames(mat))
+    # transpose of the matrix to have the entire response in one row
     dat$Y <- t(mat)
-    dat$weights <- weights
+    # extract the number of points as weights
+    weights <- metricRes %>%
+      select("ID", "npoints") %>%
+      unique()
+    # add the weights to the data.frame
+    dat <- dat %>% left_join(weights, by = "ID")
+    # extract the coordinates
+    coords <- metricRes %>%
+        select("ID", "centroidx", "centroidy") %>%
+        unique()
+    # add the coordinates to the data.frame
+    dat <- dat %>% left_join(coords, by = "ID")
+
     return(dat)
 }

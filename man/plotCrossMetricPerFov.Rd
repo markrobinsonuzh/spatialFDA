@@ -5,16 +5,16 @@
 \title{Plot a cross type spatial metric per field of view}
 \usage{
 plotCrossMetricPerFov(
-  metric_df,
+  metricDf,
   theo = NULL,
   correction = NULL,
   x = NULL,
-  image_id = NULL,
+  imageId = NULL,
   ID = NULL
 )
 }
 \arguments{
-\item{metric_df}{the metric dataframe as calculated by calcMetricPerFov}
+\item{metricDf}{the metric dataframe as calculated by \code{calcMetricPerFov}}
 
 \item{theo}{logical; if the theoretical line should be plotted}
 
@@ -22,7 +22,7 @@ plotCrossMetricPerFov(
 
 \item{x}{the x-axis variable to plot}
 
-\item{image_id}{the ID of the image/fov}
+\item{imageId}{the ID of the image/fov}
 
 \item{ID}{the (optional) ID for plotting combinations}
 }
@@ -30,22 +30,24 @@ plotCrossMetricPerFov(
 a ggplot object
 }
 \description{
-Plot a cross type spatial metric per field of view
+This function plots the cross function between two marks output from
+\code{calcMetricPerFov}. It wraps around helper function and applies this
+function to all samples.
 }
 \examples{
 spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-metric_res <- calcCrossMetricPerFov(spe, c("alpha", "beta", "delta"),
+metricRes <- calcCrossMetricPerFov(spe, c("alpha", "beta", "delta"),
     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-    r_seq = seq(0, 50, length.out = 50), by = c(
+    rSeq = seq(0, 50, length.out = 50), by = c(
         "patient_stage", "patient_id",
         "image_number"
     ),
     ncores = 1
 )
-metric_res <- subset(metric_res, image_number \%in\% c(138, 139, 140))
-p <- plotCrossMetricPerFov(metric_res,
+metricRes <- subset(metricRes, image_number \%in\% c(138, 139, 140))
+p <- plotCrossMetricPerFov(metricRes,
     theo = TRUE, correction = "rs",
-    x = "r", image_id = "image_number", ID = "ID"
+    x = "r", imageId = "image_number", ID = "ID"
 )
 print(p)
 }

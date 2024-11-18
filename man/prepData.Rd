@@ -4,10 +4,10 @@
 \alias{prepData}
 \title{Prepare data from calcMetricRes to be in the right format for FDA}
 \usage{
-prepData(metric_res, x, y)
+prepData(metricRes, x, y)
 }
 \arguments{
-\item{metric_res}{a dataframe as calculated by calcMetricRes - requires
+\item{metricRes}{a dataframe as calculated by calcMetricRes - requires
 the columns ID (unique identifier of each row)}
 
 \item{x}{the name of the x-axis of the spatial metric}
@@ -23,9 +23,9 @@ Prepare data from calcMetricRes to be in the right format for FDA
 }
 \examples{
 spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-metric_res <- calcMetricPerFov(spe, c("alpha", "beta"),
+metricRes <- calcMetricPerFov(spe, c("alpha", "beta"),
     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-    r_seq = seq(0, 50, length.out = 50), by = c(
+    rSeq = seq(0, 50, length.out = 50), by = c(
         "patient_stage", "patient_id",
         "image_number"
     ),
@@ -33,9 +33,9 @@ metric_res <- calcMetricPerFov(spe, c("alpha", "beta"),
 )
 
 # create a unique ID for each row
-metric_res$ID <- paste0(
-    metric_res$patient_stage, "x", metric_res$patient_id,
-    "x", metric_res$image_number
+metricRes$ID <- paste0(
+    metricRes$patient_stage, "x", metricRes$patient_id,
+    "x", metricRes$image_number
 )
-dat <- prepData(metric_res, "r", "rs")
+dat <- prepData(metricRes, "r", "rs")
 }

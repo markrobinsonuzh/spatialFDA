@@ -29,7 +29,11 @@ Imports:
     spatstat.explore,
     spatstat.geom,
     SummarizedExperiment,
-    tidyr
+    tidyr,
+    methods,
+    stats,
+    fda,
+    graphics
 biocViews: Software, Spatial, Transcriptomics
 VignetteBuilder: knitr
 Suggests: 

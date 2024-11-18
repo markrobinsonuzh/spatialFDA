@@ -2,7 +2,7 @@
 % Please edit documentation in R/calcMetric.R
 \name{calcMetricPerFov}
 \alias{calcMetricPerFov}
-\title{Calculate a spatial metric on a spatial experiment object per field of view}
+\title{Calculate a spatial metric on a \code{SpatialExperiment} object per field of view}
 \usage{
 calcMetricPerFov(
   spe,
@@ -10,7 +10,7 @@ calcMetricPerFov(
   subsetby = NULL,
   fun,
   marks = NULL,
-  r_seq = NULL,
+  rSeq = NULL,
   by = NULL,
   continuous = FALSE,
   ncores = 1,
@@ -18,40 +18,41 @@ calcMetricPerFov(
 )
 }
 \arguments{
-\item{spe}{a spatial experiment object}
+\item{spe}{a \code{SpatialExperiment} object}
 
 \item{selection}{the mark(s) you want to compare}
 
-\item{subsetby}{the spe colData variable to subset the data by}
+\item{subsetby}{the spe \code{colData} variable to subset the data by}
 
-\item{fun}{the spatstat function to compute on the point pattern object}
+\item{fun}{the \code{spatstat} function to compute on the point pattern object}
 
 \item{marks}{the marks to consider e.g. cell types}
 
-\item{r_seq}{the range of r values to compute the function over}
+\item{rSeq}{the range of r values to compute the function over}
 
-\item{by}{the spe colData variable(s) to add to the meta data}
+\item{by}{the spe \code{colData} variable(s) to add to the meta data}
 
 \item{continuous}{A boolean indicating whether the marks are continuous
 defaults to FALSE}
 
 \item{ncores}{the number of cores to use for parallel processing, default = 1}
 
-\item{...}{Other parameters passed to spatstat.explore functions}
+\item{...}{Other parameters passed to \code{spatstat.explore} functions}
 }
 \value{
-a dataframe of the spatstat metric objects with the radius r, the
+a \code{dataframe} of the \code{spatstat} metric objects with the radius r, the
 theoretical value of a Poisson process, the different border corrections
 the fov number, the number of points and the centroid of the image
 }
 \description{
-Calculate a spatial metric on a spatial experiment object per field of view
+A function that takes a \code{SpatialExperiment} object as input and calculates a
+spatial metric as implemented by \code{spatstat} per field of view.
 }
 \examples{
 spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
-metric_res <- calcMetricPerFov(spe, c("alpha", "beta"),
+metricRes <- calcMetricPerFov(spe, c("alpha", "beta"),
     subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-    r_seq = seq(0, 50, length.out = 50), by = c(
+    rSeq = seq(0, 50, length.out = 50), by = c(
         "patient_stage", "patient_id",
         "image_number"
     ),

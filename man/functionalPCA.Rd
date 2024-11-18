@@ -4,23 +4,21 @@
 \alias{functionalPCA}
 \title{Functional Principal Component Analysis}
 \usage{
-functionalPCA(dat, r, knots, pve = 0.95)
+functionalPCA(data, r)
 }
 \arguments{
-\item{dat}{a data object for functional data analysis containing at least the
-the functional}
+\item{data}{a data object for functional data analysis containing at least
+the functional response $Y$.}
 
 \item{r}{the functional domain}
-
-\item{knots}{the number of knots}
-
-\item{pve}{the proportion of variance explained}
 }
 \value{
 a list with components of fpca.face
 }
 \description{
-Functional Principal Component Analysis
+A function that takes as input the output of \code{calcMetricPerFov} which has to
+be converted into the correct format by \code{prepData}. The output is a list with
+the \code{fpca.face} output from refund.
 }
 \examples{
 # load the pancreas dataset
@@ -29,28 +27,27 @@ library("stringr")
 library("dplyr")
 spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
 # calculate the Gcross metric for alpha and beta cells
-metric_res <- calcMetricPerFov(spe, c("alpha", "beta"),
+metricRes <- calcMetricPerFov(spe, c("alpha", "beta"),
     subsetby = "image_number", fun = "Gcross",
-    marks = "cell_type", r_seq = seq(0, 50, length.out = 50),
+    marks = "cell_type", rSeq = seq(0, 50, length.out = 50),
     c("patient_stage", "patient_id", "image_number"), ncores = 1
 )
-metric_res$ID <- paste0(
-    metric_res$patient_stage, "x", metric_res$patient_id,
-    "x", metric_res$image_number
+metricRes$ID <- paste0(
+    metricRes$patient_stage, "x", metricRes$patient_id,
+    "x", metricRes$image_number
 )
 # prepare data for FDA
-dat <- prepData(metric_res, "r", "rs")
+dat <- prepData(metricRes, "r", "rs")
 
 # drop rows with NA
 dat <- dat |> drop_na()
 # create meta info of the IDs
-split_data <- str_split(dat$ID, "x")
-dat$condition <- factor(sapply(split_data, function(x) x[1]))
-dat$patient_id <- factor(sapply(split_data, function(x) x[2]))
-dat$image_id <- factor(sapply(split_data, function(x) x[3]))
+splitData <- str_split(dat$ID, "x")
+dat$condition <- factor(sapply(splitData, function(x) x[1]))
+dat$patient_id <- factor(sapply(splitData, function(x) x[2]))
+dat$image_id <- factor(sapply(splitData, function(x) x[3]))
 # calculate fPCA
 mdl <- functionalPCA(
-    dat = dat, r = metric_res$r |> unique(),
-    knots = 30, pve = 0.99
+    data = dat, r = metricRes$r |> unique()
 )
 }

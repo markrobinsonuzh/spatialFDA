@@ -4,7 +4,7 @@
 \alias{functionalGam}
 \title{General additive model with functional response}
 \usage{
-functionalGam(data, x, designmat, weights, formula)
+functionalGam(data, x, designmat, weights, formula, family = "gaussian", ...)
 }
 \arguments{
 \item{data}{a dataframe with the following columns: Y = functional response;
@@ -19,12 +19,22 @@ normalised by the mean of the weights in the fitting process}
 
 \item{formula}{the formula for the model. The colnames of the designmatrix
 have to correspond to the variables in the formula.}
+
+\item{family}{the distributional family as implemented in \code{family.mgcv}. For
+fast computation the default is set to \code{gaussian}. If the covariance scales
+e.g. as a function of the domain, this estimation can be improved with
+\code{gaulss} - for more information see \code{family.mgcv}.}
+
+\item{...}{Other parameters passed to \code{pffr}}
 }
 \value{
 a fitted pffr object which inherits from gam
 }
 \description{
-General additive model with functional response
+A function that takes the output of a metric calculation as done by
+\code{calcMetricPerFov}. The data has to be prepared into the correct format for
+the functional analysis by the \code{prepData} function. The output is a \code{pffr}
+object as implemented by \code{refund}.
 }
 \examples{
 # load the pancreas dataset
@@ -33,26 +43,26 @@ library("stringr")
 library("dplyr")
 spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
 # calculate the Gcross metric for alpha and beta cells
-metric_res <- calcMetricPerFov(spe, c("alpha", "beta"),
+metricRes <- calcMetricPerFov(spe, c("alpha", "beta"),
     subsetby = "image_number", fun = "Gcross",
-    marks = "cell_type", r_seq = seq(0, 50, length.out = 50),
+    marks = "cell_type", rSeq = seq(0, 50, length.out = 50),
     c("patient_stage", "patient_id", "image_number"), ncores = 1
 )
-metric_res$ID <- paste0(
-    metric_res$patient_stage, "x", metric_res$patient_id,
-    "x", metric_res$image_number
+metricRes$ID <- paste0(
+    metricRes$patient_stage, "x", metricRes$patient_id,
+    "x", metricRes$image_number
 )
 # prepare data for FDA
-dat <- prepData(metric_res, "r", "rs")
+dat <- prepData(metricRes, "r", "rs")
 
 # drop rows with NA
 dat <- dat |> drop_na()
 
 # create meta info of the IDs
-split_data <- str_split(dat$ID, "x")
-dat$condition <- factor(sapply(split_data, function(x) x[1]))
-dat$patient_id <- factor(sapply(split_data, function(x) x[2]))
-dat$image_id <- factor(sapply(split_data, function(x) x[3]))
+splitData <- str_split(dat$ID, "x")
+dat$condition <- factor(sapply(splitData, function(x) x[1]))
+dat$patient_id <- factor(sapply(splitData, function(x) x[2]))
+dat$image_id <- factor(sapply(splitData, function(x) x[3]))
 # create a designmatrix
 condition <- dat$condition
 # relevel the condition - can set explicit contrasts here
@@ -65,8 +75,8 @@ colnames(designmat) <- c(
 )
 # fit the model
 mdl <- functionalGam(
-    dat = dat, x = metric_res$r |> unique(),
-    designmat = designmat, weights = dat$weights$npoints,
+    data = dat, x = metricRes$r |> unique(),
+    designmat = designmat, weights = dat$npoints,
     formula = formula(Y ~ conditionLong_duration +
         conditionOnset + s(patient_id, bs = "re"))
 )
