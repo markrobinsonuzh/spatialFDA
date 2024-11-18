@@ -15,7 +15,7 @@ output:
   BiocStyle::html_document
 abstract: >
   A package to calculate spatial statistics metrics, explore them with
-  functional principal component analysis adn compare them with 
+  functional principal component analysis and compare them with 
   functional additive mixed models
 vignette: >
   %\VignetteIndexEntry{Functional Data Analysis of Spatial Metrics}
@@ -79,11 +79,11 @@ In this vignette we will analyse a diabetes dataset acquired by imaging mass cyt
 
 ## Loading the data
 
-The Damond et al. [@damondMapHumanType2019] dataset is easily loaded via the `r BiocStyle::Biocpkg('imcdatasets')` package. For computational reasons we will work with a reduced dataset for three patients. The entire dataset can be loaded by setting `full_dataset = TRUE`.  The package offers multiple datatypes, we will use the `r BiocStyle::Biocpkg('SpatialExperiment')` (SPE) object.
+The Damond et al. [@damondMapHumanType2019] dataset is easily loaded via the `r BiocStyle::Biocpkg('imcdatasets')` package. The entire dataset can be loaded by setting `full_dataset = TRUE`. For computational reasons, one can reduce to three patients as well by setting this flag to `FALSE`. The package offers multiple datatypes, we will use the `r BiocStyle::Biocpkg('SpatialExperiment')` (SPE) object.
 
 ```{r loading, warning = FALSE, message = FALSE}
 # load the dataset as SpatialExperiment object
-spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = TRUE)
+spe <- imcdatasets::Damond_2019_Pancreas("spe", full_dataset = FALSE)
 spe
 ```
 
@@ -100,7 +100,7 @@ dfSub <- df %>%
     subset(cell_type %in% c("alpha", "beta", "delta", "Th", "Tc")) %>%
     subset(image_name %in% c("E02", "E03", "E04", "E05"))
 p <- ggplot(dfSub, aes(x = cell_x, y = cell_y, color = cell_type)) +
-    geom_point() +
+    geom_point(size= 0.5) +
     facet_wrap(~image_name) +
     theme_light() +
     theme(legend.title.size = 20, legend.text.size = 20) +
@@ -137,7 +137,7 @@ A known metric is Ripley's $K$ function or its variance-stabilised transformatio
 
 - `theo`: the theoretical value of a homogeneous (Poisson) realisation of a point process
 
-- `border`: an edge corrected value of the $L$ function
+- `is`: an isotropic edge corrected value of the $L$ function
 
 
 ```{r Lfunction, warning = FALSE}
@@ -154,7 +154,7 @@ metricRes %>% head()
 We can visualise this metric with `plotMetricPerFov` function. Here, we need to specify which border correction we want to plot and what the x-axis is. Both can vary from function to function.
 
 ```{r plotLfunction, warning = FALSE}
-p <- plotMetricPerFov(metricRes, correction = "border", x = "r",
+p <- plotMetricPerFov(metricRes, correction = "iso", x = "r",
                       imageId = "image_number", ID = "ID")
 print(p)
 ```
@@ -172,7 +172,7 @@ Another important aspect of spatial analysis is spacing. Here, the shortest dist
 
 [@baddeleySpatialPointPatterns, pp. 255-266]
 
-For spacing metrics we get different border corrections but the calculation stays the same:
+For spacing metrics we get different border corrections but else the output stays the same:
 
 ```{r Gfunction, warning = FALSE}
 metricRes <- calcMetricPerFov(spe = spe, selection = c("alpha", "Tc"),
@@ -185,21 +185,65 @@ metricRes %>% head()
 ```
 
 ```{r plotGfunction, warning = FALSE}
-p <- plotMetricPerFov(metricRes, correction = "rs", x = "r",
+p <- plotMetricPerFov(metricRes, correction = "km", x = "r",
                       imageId = "image_number", ID = "ID")
 print(p)
 ```
 
-In the nearest-neighbor distance function we see a strong difference between long duration T1D, onset T1D and non-diabetic controls in terms of spacing of $\alpha$ and cytotoxic T cells. 
+In the nearest-neighbor distance function we see a strong difference between onset T1D, long-duration T1D and non-diabetic controls in terms of spacing of $\alpha$ and cytotoxic T cells. 
+
+# Functional boxplot
+
+Looking at the raw spatial statistics curves can be challenging. In order to summarise this information, we can plot functional boxplots by aggregating the curves into boxplots via a user-defined varibale `aggregate_by`. We use the `fbplot` function of the package `r BiocStyle::CRANpkg('fda')` [@sun2011functional; @ramsay2024fda]
+
+```{r, funcBoxPlot, warning = FALSE, results='hide'}
+# create a unique ID for each row
+metricRes$ID <- paste0(
+    metricRes$patient_stage, "x", metricRes$patient_id,
+    "x", metricRes$image_number
+)
+
+plotFbPlot(metricRes, 'r', 'km', 'patient_stage')
+```
+
+The functional boxplot shows that onset $G$-curves are more variable than the corresponding long-duration and non-diabetic curves. We note as well, that the variability is heteroscedastic a long the domain, which is a non-desired feature for our statistical modelling. Therefore, we will apply a variance stabilising transformation to our data.
+
+```{r, variancetransform, warning = FALSE}
+# can determine with a boxcox transformation what is the ideal parameter
+# for the transformation
+metricRes$kmtrans <- sqrt(metricRes$km)
+
+plotFbPlot(metricRes, 'r', 'kmtrans', 'patient_stage')
+```
 
 # Functional additive mixed models
 
-The $L$ function above showed no clear difference between the three conditions whereas the $G$ function showed a strong difference between long duration T1D and the two other conditions. In order to test these differences we will use functional additive mixed models. These are generalisations of standard additive mixed models to compare functions over their entire domain. The package that we use is the `r BiocStyle::CRANpkg('refund')` package [@scheiplFunctionalAdditiveMixed2015; @scheiplGeneralizedFunctionalAdditive2016].
+The $L$ function above showed no clear difference between the three conditions whereas the $G$ function showed a strong difference between onset T1D and the two other conditions. In order to test these differences we will use generalised functional additive mixed models. These are generalisations of standard additive mixed models to compare functions over their entire domain. The package that we use is the `r BiocStyle::CRANpkg('refund')` package [@scheiplFunctionalAdditiveMixed2015; @scheiplGeneralizedFunctionalAdditive2016].
+
+The model implemented here is of the form:
+
+$$
+\mathbb{E}[y_i(r)] = g(\alpha(r) + \beta_{0,g(i)}(r) + \sum_{j=1}^J f_j(X_{ji},r) + \epsilon_i(r))
+$$
+
+With the following terms:
+
+- $y_i(r)$ the functional response, here the `r BiocStyle::CRANpkg('spatstat')` curves
+
+- $g$ optional link function 
+
+- $\alpha(r)$ a global functional intercept varying over the domain $r$
+
+- $\beta_{0,g(i)}(r)$ a random functional intercept varying over the domain $r$ per grouping variable $g(i)$.
+
+- $f_j(X_{ji},r)$ the additive predictors
+
+- $\epsilon_i(r)$ residual zero-mean Gaussian errors
 
 In this context we need to specify a design matrix and contrasts. 
 
 ```{r funcGamG, fig.height=10, warning = FALSE}
-# filter out all rows that have a constant zero part - all r<5
+# filter out all rows that have a constant zero part - all r<10
 metricRes <- metricRes %>% filter(r > 10)
 # create a unique ID for each row
 metricRes$ID <- paste0(
@@ -208,7 +252,7 @@ metricRes$ID <- paste0(
 )
 
 # prepare dataframe from calcMetricRes to be in the correct format for pffr
-dat <- prepData(metricRes, "r", "rs")
+dat <- prepData(metricRes, "r", "kmtrans")
 
 # drop rows with NA
 dat <- dat |> drop_na()
@@ -227,12 +271,14 @@ designmat <- model.matrix(~condition)
 # colnames don't work with the '-' sign
 colnames(designmat) <- c("Intercept", "conditionLong_duration",
                          "conditionOnset")
+
+r <- metricRes$r |> unique()
 # fit the model
 mdl <- functionalGam(
-    data = dat, x = metricRes$r |> unique(),
-    designmat = designmat, weights = dat$weights$npoints,
+    data = dat, x = r,
+    designmat = designmat, weights = dat$npoints,
     formula = formula(Y ~ conditionLong_duration +
-        conditionOnset + s(patient_id, bs = "re")),
+        conditionOnset + (s(patient_id, bs = "re"))),
     family = "gaussian"
 )
 summary(mdl)
@@ -242,17 +288,46 @@ plotLs <- lapply(colnames(designmat), plotMdl, mdl = mdl,
 wrap_plots(plotLs, nrow = 3)
 ```
 
-We note that there is no difference in the $G$ function between non-diabetic and long duration T1D samples but a strong difference between non-diabetic and onset T1D. This difference is significant after $\sim 30 µm$ and increases at longer distances. Therefore, we don't only see that a spatial difference colocalisation of $\alpha$ and cytotoxic T cells is statistically significant but also at which spatial scale this difference occurs.
 
-One open problem is the implementation of confidence bands that reflect the non-independently and non-identically distributed residuals. To visualise how much of a problem this is, we can plot the contours of the correlation/covariance and look at some model diagnostics. We can model the confidence using a gaussian location-scale model if the errors are heteroskedastic [@wood2016Smoothing]. If does not result in a good model fit, we have to implement bootstrapping of confidence bands.
+We note that there is no difference in the $G$ function between non-diabetic and long duration T1D samples but a strong difference between non-diabetic and onset T1D. This difference becomes significant after $r> 40 µm$ and increases at longer distances. Therefore, we don't only see that a spatial difference in colocalisation of $\alpha$ and cytotoxic T cells is statistically significant but also at which spatial scale this difference occurs.
+
+## Model evaluation
+
+One open problem is the implementation of confidence bands that reflect the non-independently and non-identically distributed residuals. To visualise how much of a problem this is, we can plot the contours of the correlation/covariance and look at some model diagnostics.
 
 ```{r contour, warning = FALSE}
+resid(mdl) |> cor() |> filled.contour()
 resid(mdl) |> cov() |> filled.contour()
-# TODO atm some of the plots fail - potentially due to NA in mdl output
 try(refund::pffr.check(mdl))
 ```
 
-In these model diagnostics we note that there is still significant variability in the residuals that is not considered by the model. In this case we should resort to bootstrapping to obtain better confidence bands for the inference.
+In these model diagnostics we note that there is still some variability in the residuals that is not considered by the model. The QQ plot indicates a good model fit. The residuals show a considerable structure which is in line with the structure in the auto-covariance / correlation plots.
+
+In the functional additive mixed model we have a specified global intercept varying over the domain $r$ as well as functional random intercepts varying over the domain $r$ per grouping variable `patient_id`. We can plot these smooth estimates of the random intercepts.
+
+```{r intercept, warning = FALSE}
+# look at the smooth random intercepts per patient
+data <- coef(mdl)$smterms$`s(patient_id)`$coef
+data <- data %>% mutate(condition = case_when(
+     patient_id %in% c(6089, 6180, 6264, 6418) ~ "Long-duration",
+     patient_id %in% c(6126, 6134, 6278, 6386) ~ "Non-diabetic",
+     patient_id %in% c(6228, 6362, 6380, 6414) ~ "Onset"
+))
+
+p <- ggplot(data, aes(x.vec, value, colour = patient_id)) +
+  geom_point(aes(shape=factor(condition))) +
+  theme_light()
+
+q <- ggplot(data, aes(x.vec, value, colour = condition)) +
+  geom_point() +
+  theme_light() +
+  geom_smooth(aes(group = condition)) +
+  geom_smooth(aes(group = 1), col = 'black')
+
+p|q
+```
+
+We note, that there is still some structure in these intercepts. That is most likely due to problems in identifiability between the global intercept and the random intercepts. 
 
 # Functional principal component analysis
 
@@ -260,8 +335,7 @@ Another analysis that can be performed is functional principal componentent anal
 
 ```{r fPCA, warning = FALSE}
 # calculate the fPCA
-pca <- functionalPCA(dat = dat, r = metricRes$r |> unique(),
-                     knots = 30, pve = 0.99)
+pca <- functionalPCA(dat = dat, r = metricRes$r |> unique())
 # plot the biplot of the first two PCs
 plotFpca(dat = dat, res = pca, colourby = "condition")
 ```
