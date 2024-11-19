@@ -19,9 +19,11 @@ abstract: >
   functional additive mixed models
 vignette: >
   %\VignetteIndexEntry{Functional Data Analysis of Spatial Metrics}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}  
+  %\VignetteEngine{knitr::rmarkdown}
 bibliography: spatialFDA.bib
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r v1, include = FALSE}
@@ -34,17 +36,20 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-This vignette demonstrates how to use `r BiocStyle::Biocpkg('spatialFDA')` to perform functional data analysis on spatial statistics metrics. The main aim of this package is to detect differential spatial arrangements within and between celltypes given several samples/conditions. It does so by calculating spatial statistics metrics via the `r BiocStyle::CRANpkg('spatstat')` package and comparing for differences using functional additive mixed models as implemented in the `r BiocStyle::CRANpkg('refund')` package [@spatstat2005; @refund2024].
+This vignette demonstrates how to use `r BiocStyle::Biocpkg('spatialFDA')` to perform functional data analysis on spatial statistics metrics. The main aim of this package is to detect differential spatial arrangements within and between celltypes given several samples/conditions. It does so by calculating spatial statistics metrics via the `r BiocStyle::CRANpkg('spatstat')` package and comparing differences using functional additive mixed models as implemented in the `r BiocStyle::CRANpkg('refund')` package [@spatstat2005; @refund2024].
 
+[MR: these two main steps mentioned below were just mentioned above in the paragraph; I would suggest to keep only one.]
 The package consists thus of two main steps.
 
 - calculating spatial statistics metrics within or between discrete/continuous marks via `r BiocStyle::CRANpkg('spatstat')`.
 
 - comparing these curves across conditions using functional additive mixed models as implemented in `r BiocStyle::CRANpkg('refund')`.
 
-The use case is a dataset from the `r BiocStyle::Biocpkg('imcdatasets')` package. The dataset contains images from 12 human donors [@damondMapHumanType2019]. 
+The use case is a dataset from the `r BiocStyle::Biocpkg('imcdatasets')` package, which contains images from 12 human donors [@damondMapHumanType2019]. 
 
-This package is similar to other packages in `python` and `R`. The following table shows the main differences in terms of functionality [@ali2024graphcompass; @canete2022spicyr]. 
+Our package bears similarity to other packages in `python` and `R`; the following table shows the main differences in terms of functionality [@ali2024graphcompass; @canete2022spicyr]:
+
+[MR: add `mxfda` ? Or the one of the other packages from Debashis Ghosh?]
 
 |Package name                          | Foundation | Testing procedure   |
 | ------------------------------------ | --------------- | ------------------- |
@@ -89,17 +94,15 @@ spe
 
 ## Visualising the raw data
 
-We can look at the fields of view of the diabetes dataset. To do so we extract the spatial coordinates, store them as a dataframe and add the colData from the SPE to this. Finally due to overplotting, we will look only secretory cells ($\alpha, \beta$ and $\delta$ cells) and T-cells (CD8+ and CD4+ T-cells) for the first four fovs of the healthy sample.
+We can look at the fields of view (FOVs) of the diabetes dataset. To do so we extract the spatial coordinates, store them as a dataframe and add the colData from the SPE to this. Finally due to overplotting, we will look only secretory cells ($\alpha, \beta$ and $\delta$ cells) and T-cells (CD8+ and CD4+ T-cells) for the first four FOVs of the healthy sample.
 
-```{r plotting fovs, warning = FALSE}
-df <- as.data.frame(spatialCoords(spe))
-
-df <- cbind(df, colData(spe))
+```{r plotting fovs, warning = FALSE, fig.width=10}
+df <- data.frame(spatialCoords(spe), colData(spe))
 
 dfSub <- df %>%
     subset(cell_type %in% c("alpha", "beta", "delta", "Th", "Tc")) %>%
     subset(image_name %in% c("E02", "E03", "E04", "E05"))
-p <- ggplot(dfSub, aes(x = cell_x, y = cell_y, color = cell_type)) +
+(p <- ggplot(dfSub, aes(x = cell_x, y = cell_y, color = cell_type)) +
     geom_point(size= 0.5) +
     facet_wrap(~image_name) +
     theme_light() +
@@ -107,9 +110,7 @@ p <- ggplot(dfSub, aes(x = cell_x, y = cell_y, color = cell_type)) +
     coord_equal() +
     xlab("x") +
     ylab("y") +
-    labs(color = "cell type")
-
-p
+    labs(color = "cell type"))
 ```
 
 # Calculating Spatial Statistics Metrics
@@ -124,96 +125,94 @@ In a first step, we calculate a spatial statistic curve as implemented by `r Bio
 
 - Empty space function $F$
 
-All of these functions have different implementations to correct for inhomogeneity and for comparison between two marks (cross functions) [@baddeleySpatialPointPatterns]. 
+Note that all of these functions have different implementations to correct for inhomogeneity and for comparison between two marks (cross functions) [@baddeleySpatialPointPatterns]. 
 
 
 ## Correlation
 
-With correlation metrics we assess the distances of all points to one another while normalising for effects of different density and of the window size $|W|$. Furthermore, spatial metrics are corrected for edge effects, the fact that points at the boarder of a fov have not a fully observed neighborhood [@baddeleySpatialPointPatterns, pp. 203 ff.].  
+With correlation metrics, we assess the *distances* of all points to one another while normalising for density effects and of the window size $|W|$. Furthermore, spatial metrics are corrected for edge effects, due to the fact that points at the border of a FOV do not have a fully-observed neighborhood [@baddeleySpatialPointPatterns, pp. 203 ff.].  
 
-A known metric is Ripley's $K$ function or its variance-stabilised transformation, the $L$ function. We can calculate a variant of the $L$ function with the function `calcMetricPerFov` between e.g $\alpha$ and cytotoxic T cells. The output is a dataframe with the following most important columns:
+A well-known metric is Ripley's $K$ function or its variance-stabilised transformation, the $L$ function. We can calculate a variant of the $L$ function with the function `calcMetricPerFov` between e.g $\alpha$ and cytotoxic T cells. The output is a dataframe with the following most important columns:
 
 - `r`: the radius at which the spatial metric is evaluated
 
 - `theo`: the theoretical value of a homogeneous (Poisson) realisation of a point process
 
-- `is`: an isotropic edge corrected value of the $L$ function
+- `iso`: an isotropic edge corrected value of the $L$ function
 
 
 ```{r Lfunction, warning = FALSE}
 metricRes <- calcMetricPerFov(spe = spe, selection = c("alpha", "Tc"),
-    subsetby = "image_number", fun = "Lcross", marks = "cell_type",
-    rSeq = seq(0, 50, length.out = 50), by = c("patient_stage", "patient_id",
-                                               "image_number"),
-    ncores = 1
-)
+                              subsetby = "image_number", fun = "Lcross", 
+                              marks = "cell_type",
+                              rSeq = seq(0, 50, length.out = 50), 
+                              by = c("patient_stage", "patient_id",
+                                     "image_number"),
+                              ncores = 1)
 
-metricRes %>% head()
+metricRes %>% head(3)
 ```
 
 We can visualise this metric with `plotMetricPerFov` function. Here, we need to specify which border correction we want to plot and what the x-axis is. Both can vary from function to function.
 
 ```{r plotLfunction, warning = FALSE}
-p <- plotMetricPerFov(metricRes, correction = "iso", x = "r",
-                      imageId = "image_number", ID = "ID")
-print(p)
+plotMetricPerFov(metricRes, correction = "iso", x = "r",
+                 imageId = "image_number", ID = "ID")
 ```
 
-by eye we see no big difference between the conditions in terms of correlation 
+By eye, we see no visible difference between the conditions in terms of correlation 
 of $\alpha$ and cytotoxic T cells.
 
 ## Spacing
 
-Another important aspect of spatial analysis is spacing. Here, the shortest distances or empty space to the next neighbor is calculated. This quantifies a different aspect of a point pattern than correlation or intensity of points. Two very well known functions are:
+Another important aspect of spatial analysis is spacing. Here, the shortest distances or empty space to the next neighbor is calculated. This quantifies a different aspect of a point pattern than correlation or intensity of points. Two well-known functions are [@baddeleySpatialPointPatterns, pp. 255-266]:
 
 - nearest-neighbor distance distribution $G$
 
 - empty space function $F$
 
-[@baddeleySpatialPointPatterns, pp. 255-266]
-
-For spacing metrics we get different border corrections but else the output stays the same:
+For spacing metrics, we get different border corrections but otherwise the output stays the same:
 
 ```{r Gfunction, warning = FALSE}
 metricRes <- calcMetricPerFov(spe = spe, selection = c("alpha", "Tc"),
-    subsetby = "image_number", fun = "Gcross", marks = "cell_type",
-    rSeq = seq(0, 50, length.out = 50),
-    by = c("patient_stage", "patient_id", "image_number"), ncores = 1
-)
+                              subsetby = "image_number", fun = "Gcross", 
+                              marks = "cell_type",
+                              rSeq = seq(0, 50, length.out = 50),
+                              by = c("patient_stage", "patient_id", 
+                                     "image_number"), 
+                              ncores = 1)
 
-metricRes %>% head()
+metricRes %>% head(3)
 ```
 
 ```{r plotGfunction, warning = FALSE}
-p <- plotMetricPerFov(metricRes, correction = "km", x = "r",
-                      imageId = "image_number", ID = "ID")
-print(p)
+plotMetricPerFov(metricRes, correction = "km", x = "r",
+                 imageId = "image_number", ID = "ID")
 ```
 
-In the nearest-neighbor distance function we see a strong difference between onset T1D, long-duration T1D and non-diabetic controls in terms of spacing of $\alpha$ and cytotoxic T cells. 
+In the nearest-neighbor distance function, we see a strong difference between onset T1D, long-duration T1D and non-diabetic controls in terms of spacing of $\alpha$ and cytotoxic T cells. 
 
 # Functional boxplot
 
-Looking at the raw spatial statistics curves can be challenging. In order to summarise this information, we can plot functional boxplots by aggregating the curves into boxplots via a user-defined varibale `aggregate_by`. We use the `fbplot` function of the package `r BiocStyle::CRANpkg('fda')` [@sun2011functional; @ramsay2024fda]
+Looking at raw spatial statistics curves can be challenging. In order to summarise this information, we can plot functional boxplots by aggregating the curves into boxplots via a user-defined variable `aggregate_by`. We use the `fbplot` function from the `r BiocStyle::CRANpkg('fda')` package. [@sun2011functional; @ramsay2024fda]
 
 ```{r, funcBoxPlot, warning = FALSE, results='hide'}
 # create a unique ID for each row
-metricRes$ID <- paste0(
-    metricRes$patient_stage, "x", metricRes$patient_id,
-    "x", metricRes$image_number
-)
+metricRes$ID <- with(metricRes, 
+                     paste0(patient_stage, "x", 
+                            patient_id, "x",image_number))
 
-plotFbPlot(metricRes, 'r', 'km', 'patient_stage')
+collector <- plotFbPlot(metricRes, 'r', 'km', 'patient_stage')
 ```
 
-The functional boxplot shows that onset $G$-curves are more variable than the corresponding long-duration and non-diabetic curves. We note as well, that the variability is heteroscedastic a long the domain, which is a non-desired feature for our statistical modelling. Therefore, we will apply a variance stabilising transformation to our data.
+The functional boxplot shows that onset $G$-curves are more variable than the corresponding long-duration and non-diabetic curves. We note as well, that the variability is heteroscedastic along the domain (i.e., variance increases with radius), which is undesirable for our statistical modelling. Therefore, we will apply a variance stabilising transformation to our data.
 
 ```{r, variancetransform, warning = FALSE}
 # can determine with a boxcox transformation what is the ideal parameter
 # for the transformation
 metricRes$kmtrans <- sqrt(metricRes$km)
 
-plotFbPlot(metricRes, 'r', 'kmtrans', 'patient_stage')
+collector <- plotFbPlot(metricRes, 'r', 'kmtrans', 'patient_stage')
 ```
 
 # Functional additive mixed models
@@ -244,12 +243,11 @@ In this context we need to specify a design matrix and contrasts.
 
 ```{r funcGamG, fig.height=10, warning = FALSE}
 # filter out all rows that have a constant zero part - all r<10
-metricRes <- metricRes %>% filter(r > 10)
+metrxicRes <- metricRes %>% filter(r > 10)
 # create a unique ID for each row
-metricRes$ID <- paste0(
-    metricRes$patient_stage, "x", metricRes$patient_id,
-    "x", metricRes$image_number
-)
+metricRes$ID <- with(metricRes,
+                     paste0(patient_stage, "x",
+                            patient_id, "x", image_number))
 
 # prepare dataframe from calcMetricRes to be in the correct format for pffr
 dat <- prepData(metricRes, "r", "kmtrans")
@@ -258,38 +256,38 @@ dat <- prepData(metricRes, "r", "kmtrans")
 dat <- dat |> drop_na()
 
 # create meta info of the IDs
-splitData <- str_split(dat$ID, "x")
-dat$condition <- factor(sapply(splitData, function(x) x[1]))
-dat$patient_id <- factor(sapply(splitData, function(x) x[2]))
-dat$imageId <- factor(sapply(splitData, function(x) x[3]))
-# create a designmatrix
-condition <- dat$condition
-# relevel the condition - can set explicit contrasts here
-# - default is treamtment control contrast
-condition <- relevel(condition, "Non-diabetic")
-designmat <- model.matrix(~condition)
-# colnames don't work with the '-' sign
-colnames(designmat) <- c("Intercept", "conditionLong_duration",
-                         "conditionOnset")
+splitData <- dat$ID %>%
+  str_replace("-","_") %>%
+  str_split_fixed("x", 3) %>% 
+  data.frame(stringsAsFactors = TRUE) %>%
+  setNames(c("condition", "patient_id", "imageId")) %>%
+  mutate(condition = relevel(condition,"Non_diabetic"))
+
+dat <- cbind(dat, splitData)
+
+# create a design matrix
+mm <- model.matrix(~condition, data = dat)
+colnames(mm)[1] <- "Intercept"
 
 r <- metricRes$r |> unique()
+
 # fit the model
 mdl <- functionalGam(
     data = dat, x = r,
-    designmat = designmat, weights = dat$npoints,
+    designmat = mm, weights = dat$npoints,
     formula = formula(Y ~ conditionLong_duration +
         conditionOnset + (s(patient_id, bs = "re"))),
     family = "gaussian"
 )
 summary(mdl)
 
-plotLs <- lapply(colnames(designmat), plotMdl, mdl = mdl,
+plotLs <- lapply(colnames(mm), plotMdl, mdl = mdl,
                  shift = mdl$coefficients[["(Intercept)"]])
 wrap_plots(plotLs, nrow = 3)
 ```
 
 
-We note that there is no difference in the $G$ function between non-diabetic and long duration T1D samples but a strong difference between non-diabetic and onset T1D. This difference becomes significant after $r> 40 µm$ and increases at longer distances. Therefore, we don't only see that a spatial difference in colocalisation of $\alpha$ and cytotoxic T cells is statistically significant but also at which spatial scale this difference occurs.
+We note that, according to the estimated confidence bands, there is no difference in the $G$ function between non-diabetic and long-duration T1D samples, but a strong difference between non-diabetic and onset T1D. This difference becomes significant after $r> 40 µm$ and increases at longer distances. Thus, we see not only that a spatial difference in co-localisation of $\alpha$ and cytotoxic T cells is statistically significant but also at which spatial scale this difference occurs.
 
 ## Model evaluation
 
@@ -301,21 +299,18 @@ resid(mdl) |> cov() |> filled.contour()
 try(refund::pffr.check(mdl))
 ```
 
-In these model diagnostics we note that there is still some variability in the residuals that is not considered by the model. The QQ plot indicates a good model fit. The residuals show a considerable structure which is in line with the structure in the auto-covariance / correlation plots.
+In these model diagnostics, we note that there is still some variability in the residuals that is not considered by the model. The QQ plot indicates a good model fit. The residuals show a considerable structure that is in line with the structure in the auto-covariance / correlation plots.
 
-In the functional additive mixed model we have a specified global intercept varying over the domain $r$ as well as functional random intercepts varying over the domain $r$ per grouping variable `patient_id`. We can plot these smooth estimates of the random intercepts.
+In the functional additive mixed model, we have a specified global intercept varying over the domain $r$ as well as functional random intercepts varying over the domain $r$ per grouping variable `patient_id`. We can plot these smooth estimates of the random intercepts.
 
 ```{r intercept, warning = FALSE}
 # look at the smooth random intercepts per patient
 data <- coef(mdl)$smterms$`s(patient_id)`$coef
-data <- data %>% mutate(condition = case_when(
-     patient_id %in% c(6089, 6180, 6264, 6418) ~ "Long-duration",
-     patient_id %in% c(6126, 6134, 6278, 6386) ~ "Non-diabetic",
-     patient_id %in% c(6228, 6362, 6380, 6414) ~ "Onset"
-))
+data <- data %>% left_join(splitData %>% 
+                             select(patient_id, condition) %>% unique)
 
 p <- ggplot(data, aes(x.vec, value, colour = patient_id)) +
-  geom_point(aes(shape=factor(condition))) +
+  geom_point(aes(shape=condition)) +
   theme_light()
 
 q <- ggplot(data, aes(x.vec, value, colour = condition)) +
@@ -327,9 +322,11 @@ q <- ggplot(data, aes(x.vec, value, colour = condition)) +
 p|q
 ```
 
-We note, that there is still some structure in these intercepts. That is most likely due to problems in identifiability between the global intercept and the random intercepts. 
+We note that there is still some structure in these intercepts, which is most likely due to identifiability problems between the global and random intercepts. 
 
 # Functional principal component analysis
+
+[MR: should this section go earlier? Like together with the functional boxplots?]
 
 Another analysis that can be performed is functional principal componentent analysis (fPCA). This is a method to capture the main modes of variation in functional data [@ramsayPrincipalComponentsAnalysis2005]. We use the `r BiocStyle::CRANpkg('refund')` implementation of fPCA. 
 
